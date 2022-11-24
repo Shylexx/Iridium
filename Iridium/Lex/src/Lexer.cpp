@@ -117,6 +117,7 @@ namespace iridium {
         {
         }
     }
+    return addToken(tok::Token(currentTokenLength(), tok::TokType::i64));
   }
 
   tok::Token Lexer::lexString() {
