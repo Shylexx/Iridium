@@ -8,6 +8,7 @@ namespace iridium {
       // Basic Tokens
     enum class TokType : std::uint8_t {
       EndOfFile,
+      SyntaxError,
       Identifier,
 
       // Comments
