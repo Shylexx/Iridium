@@ -24,5 +24,17 @@ target_link_libraries(GTEST_SANITY
   GTest::gtest_main
 )
 
+# LEXER TESTING
+add_executable(LexTEST
+  Lex/LexTest.cpp
+)
+
+target_link_libraries(LexTEST
+  GTest::gtest_main
+  IridiumLex
+)
+
 include(GoogleTest)
 gtest_discover_tests(GTEST_SANITY)
+
+gtest_discover_tests(LexTEST)
