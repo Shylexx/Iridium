@@ -25,9 +25,10 @@ namespace iridium {
     while (m_Tokens.back().getTokType() != tok::TokType::EndOfFile) {
       auto tok = nextToken();
 
-      if (tok.getTokType() == tok::TokType::SyntaxError) {
+      // Not working?
+      /*if (tok.getTokType() == tok::TokType::SyntaxError) {
         std::cerr << "Syntax Error: " << tok.getString() << " on line [" << tok.geti64() << "]" << std::endl;
-      }
+      }*/
     }
   }
 
@@ -209,15 +210,16 @@ namespace iridium {
     // Save the string's start line in case of error
     int stringStartLine = m_CurrentLine;
 
-    while(peek() != '"') {
-      if(peek() == '\n') {
+    while (peek() != '"') {
+      if (peek() == '\n') {
         m_CurrentLine++;
-      } 
-      advance();
-    }
+      }
 
-    if(atEOF()) {
-      return addToken(tok::Token(0, tok::TokType::SyntaxError, "String Not Terminated", stringStartLine));
+      advance();
+
+      if (atEOF()) {
+        return addToken(tok::Token(0, tok::TokType::SyntaxError, "String Not Terminated", stringStartLine));
+      }
     }
 
     // Consume the closing '"'
@@ -274,6 +276,14 @@ namespace iridium {
       }
     }
     return errorCount;
+  }
+
+  void Lexer::syntaxErrorsToCerr() {
+    for (auto& tok : m_Tokens) {
+      if (tok.getTokType() == tok::TokType::SyntaxError) {
+        std::cerr << "Syntax Error: " << tok.getString() << " on line [" << tok.geti64() << "]" << std::endl;
+      }
+    }
   }
 
 

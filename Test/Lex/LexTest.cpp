@@ -17,7 +17,8 @@ TEST(LexTest, LexIdentifiersAndFunctions) {
 	iridium::Lexer lexer;
 	lexer.LexString("fn test fn");
 	std::cerr << lexer.DumpTokenTypes() << std::endl;
-	ASSERT_EQ(lexer.tokenCount(), 4);
+	EXPECT_EQ(lexer.tokenCount(), 4);
+	EXPECT_EQ(lexer.errorCount(), 0);
 }
 
 TEST(LexTest, LexPunctuators) {
@@ -25,11 +26,13 @@ TEST(LexTest, LexPunctuators) {
 	lexer.LexString("fn, (test), fn");
 	std::cerr << lexer.DumpTokenTypes() << std::endl;
 	std::cerr << "Tokens Lexed: " << lexer.tokenCount() << std::endl;
-	ASSERT_EQ(lexer.tokenCount(), 8);
+	EXPECT_EQ(lexer.tokenCount(), 8);
+	EXPECT_EQ(lexer.errorCount(), 0);
 }
 
-//TEST(LexTest, StringsNeedEnding) {
-//	iridium::Lexer lexer;
-//	lexer.LexString("\" fn test, fn");
-//	ASSERT_EQ(lexer.errorCount(), 1);
-//}
+TEST(LexTest, StringsNeedEnding) {
+	iridium::Lexer lexer;
+	lexer.LexString("\" fn test, fn");
+	lexer.syntaxErrorsToCerr();
+	ASSERT_EQ(lexer.errorCount(), 1);
+}

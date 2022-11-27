@@ -17,6 +17,7 @@ namespace iridium {
 
     int tokenCount() { return m_Tokens.size(); }
     int errorCount();
+    void syntaxErrorsToCerr();
   private:
     // All of the tokens lexed so far, in order
     std::vector<tok::Token> m_Tokens;
