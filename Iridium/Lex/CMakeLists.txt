@@ -1,7 +1,7 @@
 add_library(IridiumLex STATIC
-  src/Lexer.cpp
-  src/TokType.cpp
-  src/Token.cpp
+  src/Lex/Lexer.cpp
+  src/Lex/TokType.cpp
+  src/Lex/Token.cpp
 )
 
 target_include_directories(IridiumLex

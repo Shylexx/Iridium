@@ -1,5 +1,6 @@
 add_library(IridiumParse STATIC
-  src/Parser.cpp
+  src/Parse/Parser.cpp
+  src/Parse/AST/ASTVisitor.cpp
 )
 
 target_include_directories(IridiumParse

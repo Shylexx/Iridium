@@ -34,7 +34,17 @@ target_link_libraries(LexTEST
   IridiumLex
 )
 
+add_executable(ParseTEST
+  Parse/ParseTest.cpp
+)
+
+target_link_libraries(ParseTEST
+  GTest::gtest_main
+  IridiumParse
+)
+
 include(GoogleTest)
 gtest_discover_tests(GTEST_SANITY)
 
 gtest_discover_tests(LexTEST)
+gtest_discover_tests(ParseTEST)
