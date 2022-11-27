@@ -65,6 +65,8 @@ namespace iridium {
       case '+': return addToken(tok::Token(1, tok::TokType::Plus));
       case '*': return addToken(tok::Token(1, tok::TokType::Asterisk));
       case '/': return addToken(tok::Token(1, tok::TokType::Slash));
+      case '&': return addToken(tok::Token(1, tok::TokType::Ampersand));
+      // Two char punctuators
       case '!':
         return match('=') ? addToken(tok::Token(1, tok::TokType::NotEqual)) : addToken(tok::Token(1, tok::TokType::Exclaim));
       case '=':
@@ -186,24 +188,85 @@ namespace iridium {
 
   tok::Token Lexer::lexIdentifier() {
     // TODO
-    switch (m_SourceCode[m_TokenStartIndex]) {
-      case 'f':
-        {
-        // Move source cursor to end of the keyword
+    /*switch (m_SourceCode[m_TokenStartIndex]) {
+    case 'f':
+    {
+      switch (m_SourceCode[m_TokenStartIndex + 1]) {
+      case 'n': {
         skipToEndOfAlnum();
         return addToken(tok::Token(currentTokenLength(), tok::TokType::Fn));
-        }
+      }
+      case 'o': {
+        skipToEndOfAlnum();
+        return addToken(tok::Token(currentTokenLength(), tok::TokType::For));
+      }
+      case '6': {
+        skipToEndOfAlnum();
+        return addToken(tok::Token(currentTokenLength(), tok::TokType::f64));
+      }
+      default: {
+        break;
+      }
+      }
+    }
+    case 'i':
+    {
+      switch (m_SourceCode[m_TokenStartIndex + 1]) {
+      case 'f':
+      {
+        skipToEndOfAlnum();
+        return addToken(tok::Token(currentTokenLength(), tok::TokType::If));
+      }
+      case '6':
+      {
+        skipToEndOfAlnum();
+        return addToken(tok::Token(currentTokenLength(), tok::TokType::i64));
+      }
       default: break;
+      }
     }
-
-    // Must be an identifier.
-    while (std::isalnum(peek())) {
-      advance();
+    case 'e':
+    {
+      skipToEndOfAlnum();
+      return addToken(tok::Token(currentTokenLength(), tok::TokType::Else));
     }
+    case 'r':
+    {
+      skipToEndOfAlnum();
+      return addToken(tok::Token(currentTokenLength(), tok::TokType::Return));
+    }
+    case 'S':
+    {
+      skipToEndOfAlnum();
+      return addToken(tok::Token(currentTokenLength(), tok::TokType::String));
+    }
+    case 's':
+    {
+      skipToEndOfAlnum();
+      return addToken(tok::Token(currentTokenLength(), tok::TokType::Struct));
+    }
+    case 'w':
+    {
+      skipToEndOfAlnum();
+      return addToken(tok::Token(currentTokenLength(), tok::TokType::While));
+    }
+    default: break;
+    }*/
 
+    // Get the whole identifier string
+    skipToEndOfAlnum();
+
+    // Get the current token as a string
     std::string identifierString = m_SourceCode.substr(m_TokenStartIndex, currentTokenLength());
 
-    return addToken(tok::Token(currentTokenLength(), tok::TokType::Identifier, identifierString));
+    tok::TokType toktype = stringToTokType(identifierString);
+
+    if (toktype == tok::TokType::Identifier) {
+      return addToken(tok::Token(currentTokenLength(), tok::TokType::Identifier, identifierString));
+    }
+    else {
+      return addToken(tok::Token(currentTokenLength(), toktype));
+    }
   }
 
   tok::Token Lexer::lexString() {
@@ -236,6 +299,75 @@ namespace iridium {
     return m_Tokens.back();
   }
 
+  tok::TokType Lexer::stringToTokType(const std::string& str) {
+    switch (str.size()) {
+    case 2: {
+      if (str == "if") {
+        return tok::TokType::If;
+      }
+      else if (str == "fn") {
+        return tok::TokType::Fn;
+      }
+      else {
+        return tok::TokType::Identifier;
+      }
+    }
+    case 3: {
+      if (str == "for") {
+        return tok::TokType::For;
+      }
+      else if (str == "i64") {
+        return tok::TokType::i64;
+      }
+      else if (str == "f64") {
+        return tok::TokType::f64;
+      }
+      else {
+        return tok::TokType::Identifier;
+      }
+    }
+    case 4: {
+      if (str == "else") {
+        return tok::TokType::Else;
+      }
+      else if (str == "enum") {
+        return tok::TokType::Enum;
+      }
+      else {
+        return tok::TokType::Identifier;
+      }
+    }
+    case 5: {
+      if (str == "while") {
+        return tok::TokType::While;
+      }
+      else if (str == "struct") {
+        return tok::TokType::Struct;
+      }
+      else {
+        return tok::TokType::Identifier;
+      }
+    }
+    case 6: {
+      if (str == "extern") {
+        return tok::TokType::Extern;
+      }
+      else if (str == "return") {
+        return tok::TokType::Return;
+      }
+      else if (str == "String") {
+        return tok::TokType::String;
+      }
+      else {
+        return tok::TokType::Identifier;
+      }
+    }
+    default: {
+      return tok::TokType::Identifier;
+    }
+    }
+  }
+
   std::string Lexer::DumpTokenTypes() {
     std::string tokenTypes;
     for (auto& token : m_Tokens) {
@@ -244,11 +376,52 @@ namespace iridium {
       case tok::TokType::EndOfFile:
         type = "TOK::EOF";
         break;
+      case tok::TokType::SyntaxError:
+        type = "TOK::SYNTAXERR: " + token.getString();
       case tok::TokType::Identifier:
         type = "TOK::IDENTIFIER: " + token.getString();
         break;
+      // Keywords
       case tok::TokType::Fn:
         type = "TOK::FN";
+        break;
+      case tok::TokType::If:
+        type = "TOK::IF";
+        break;
+      case tok::TokType::Else:
+        type = "TOK::ELSE";
+        break;
+      case tok::TokType::While:
+        type = "TOK::WHILE";
+        break;
+      case tok::TokType::For:
+        type = "TOK::FOR";
+        break;
+      case tok::TokType::Return:
+        type = "TOK::RETURN";
+        break;
+      case tok::TokType::Extern:
+        type = "TOK::EXTERN";
+        break;
+      case tok::TokType::Enum:
+        type = "TOK::ENUM";
+        break;
+      case tok::TokType::Struct:
+        type = "TOK::STRUCT";
+        break;
+      // Literals
+      case tok::TokType::i64:
+        type = "TOK::i64";
+        break;
+      case tok::TokType::f64:
+        type = "TOK::f64";
+        break;
+      case tok::TokType::String:
+        type = "TOK::STRING";
+        break;
+      // Punctuators
+      case tok::TokType::Period:
+        type = "TOK::PERIOD";
         break;
       case tok::TokType::Comma:
         type = "TOK::COMMA";
@@ -259,7 +432,68 @@ namespace iridium {
       case tok::TokType::CloseParen:
         type = "TOK::CLOSEPAREN";
         break;
+      case tok::TokType::OpenBrace:
+        type = "TOK::OPENBRACE";
+        break;
+      case tok::TokType::CloseBrace:
+        type = "TOK::CLOSEBRACE";
+        break;
+      case tok::TokType::OpenBracket:
+        type = "TOK::OPENBRACKET";
+        break;
+      case tok::TokType::CloseBracket:
+        type = "TOK::CLOSEBRACKET";
+        break;
+      case tok::TokType::Ampersand:
+        type = "TOK::AMPERSAND";
+        break;
+      case tok::TokType::Colon:
+        type = "TOK::COLON";
+        break;
+      case tok::TokType::Semicolon:
+        type = "TOK::SEMICOLON";
+        break;
+      case tok::TokType::Asterisk:
+        type = "TOK::ASTERISK";
+        break;
+      case tok::TokType::Slash:
+        type = "TOK::SLASH";
+        break;
+      case tok::TokType::Plus:
+        type = "TOK::PLUS";
+        break;
+      case tok::TokType::Minus:
+        type = "TOK::MINUS";
+        break;
+      case tok::TokType::Assignment:
+        type = "TOK::ASSIGN";
+        break;
+      case tok::TokType::Equal:
+        type = "TOK::EQUALTO";
+        break;
+      case tok::TokType::NotEqual:
+        type = "TOK::NOTEQUALTO";
+        break;
+      case tok::TokType::GreaterThan:
+        type = "TOK::GREATERTHAN";
+        break;
+      case tok::TokType::GreaterOrEqual:
+        type = "TOK::GREATEROREQUAL";
+        break;
+      case tok::TokType::LessThan:
+        type = "TOK::LESSTHAN";
+        break;
+      case tok::TokType::LessOrEqual:
+        type = "TOK::LESSOREQUAL";
+        break;
+      case tok::TokType::Exclaim:
+        type = "TOK::EXCLAIM";
+        break;
+      case tok::TokType::Hash:
+        type = "TOK::HASH";
+        break;
       default:
+        type = "TOK::UNKNOWN";
         break;
       }
       tokenTypes += type + ", ";

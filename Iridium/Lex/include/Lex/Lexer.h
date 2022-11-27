@@ -16,6 +16,7 @@ namespace iridium {
     std::string DumpTokenTypes();
 
     int tokenCount() { return m_Tokens.size(); }
+    int curLine() { return m_CurrentLine; }
     int errorCount();
     void syntaxErrorsToCerr();
   private:
@@ -39,6 +40,7 @@ namespace iridium {
     tok::Token lexNumber();
     tok::Token lexIdentifier();
     tok::Token lexString();
+    tok::TokType stringToTokType(const std::string& str);
 
     // Returns the amount of lexemes the current token is long
     int currentTokenLength();

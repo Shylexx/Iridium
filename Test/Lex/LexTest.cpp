@@ -16,7 +16,6 @@ TEST(LexTest, CopyToken) {
 TEST(LexTest, LexIdentifiersAndFunctions) {
 	iridium::Lexer lexer;
 	lexer.LexString("fn test fn");
-	std::cerr << lexer.DumpTokenTypes() << std::endl;
 	EXPECT_EQ(lexer.tokenCount(), 4);
 	EXPECT_EQ(lexer.errorCount(), 0);
 }
@@ -24,8 +23,6 @@ TEST(LexTest, LexIdentifiersAndFunctions) {
 TEST(LexTest, LexPunctuators) {
 	iridium::Lexer lexer;
 	lexer.LexString("fn, (test), fn");
-	std::cerr << lexer.DumpTokenTypes() << std::endl;
-	std::cerr << "Tokens Lexed: " << lexer.tokenCount() << std::endl;
 	EXPECT_EQ(lexer.tokenCount(), 8);
 	EXPECT_EQ(lexer.errorCount(), 0);
 }
@@ -33,6 +30,13 @@ TEST(LexTest, LexPunctuators) {
 TEST(LexTest, StringsNeedEnding) {
 	iridium::Lexer lexer;
 	lexer.LexString("\" fn test, fn");
-	lexer.syntaxErrorsToCerr();
 	ASSERT_EQ(lexer.errorCount(), 1);
+}
+
+TEST(LexTest, KeywordLexing) {
+	iridium::Lexer lexer;
+	lexer.LexString("return extern, fn(fn)(, if while/ else *for + \n enum&String i64");
+	EXPECT_EQ(lexer.curLine(), 2);
+	EXPECT_EQ(lexer.errorCount(), 0);
+	EXPECT_EQ(lexer.tokenCount(), 21);
 }
