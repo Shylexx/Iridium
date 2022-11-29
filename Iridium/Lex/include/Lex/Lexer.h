@@ -19,6 +19,12 @@ namespace iridium {
     int curLine() { return m_CurrentLine; }
     int errorCount();
     void syntaxErrorsToCerr();
+
+    std::vector<tok::Token> getTokens() { return m_Tokens; }
+
+    tok::Token get(int index) { return m_Tokens[index]; }
+
+    void addSource(const std::string& source);
   private:
     // All of the tokens lexed so far, in order
     std::vector<tok::Token> m_Tokens;

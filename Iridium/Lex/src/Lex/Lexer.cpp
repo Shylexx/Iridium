@@ -31,6 +31,10 @@ namespace iridium {
     }
   }
 
+  void Lexer::addSource(const std::string &source) {
+    m_SourceCode += source;
+  }
+
   tok::Token Lexer::nextToken() {
     skipWhitespace();
 

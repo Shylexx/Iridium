@@ -12,6 +12,8 @@ namespace iridium {
     // General purpose Token class
     class Token {
     public:
+      Token()
+        : m_Size(0), m_TokType(tok::TokType::Default) {}
       Token(uint32_t size, TokType tokenType)
         : m_Size(size), m_TokType(tokenType) {}
       Token(uint32_t size, TokType tokenType, std::string string)
