@@ -21,7 +21,7 @@ namespace iridium {
   private:
     int m_CurTok = 0;
 
-    std::unique_ptr<AST::StmtAST> ParseStmt();
+    std::unique_ptr<AST::Stmt> ParseStmt();
 
     std::unique_ptr<Lexer> m_Lexer;
 
@@ -39,16 +39,16 @@ namespace iridium {
     bool match(int count, tok::TokType types...);
     tok::Token consume(tok::TokType type, std::string errMessage);
 
-    AST::StmtAST declaration();
-    AST::StmtAST fnDeclaration();
-    AST::StmtAST statement();
-    AST::StmtAST returnStatement();
-    AST::StmtAST forStatement();
-    AST::StmtAST whileStatement();
-    AST::StmtAST blockStatement();
-    AST::StmtAST ifStatement();
-    AST::StmtAST exprStatement();
-    AST::StmtAST scopeStatement();
+    AST::Stmt declaration();
+    AST::Stmt fnDeclaration();
+    AST::Stmt statement();
+    AST::Stmt returnStatement();
+    AST::Stmt forStatement();
+    AST::Stmt whileStatement();
+    AST::Stmt blockStatement();
+    AST::Stmt ifStatement();
+    AST::Stmt exprStatement();
+    AST::Stmt scopeStatement();
 
   };
 } // namespace iridium

@@ -4,9 +4,15 @@
 
 namespace iridium {
 	namespace AST {
-		class StmtAST {
+		class Stmt {
 
 		};
+
+    class IfStmt : public Stmt {
+    };
+
+    class FnStatement : public Stmt {
+    };
 	}
 }
 #endif

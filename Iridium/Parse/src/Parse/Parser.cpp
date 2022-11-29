@@ -15,13 +15,13 @@ namespace iridium {
     void Parser::ParseFile(const std::string& source) {
       m_Lexer->LexString(source);
 
-      std::vector<AST::StmtAST> Stmts;
+      std::vector<AST::Stmt> Stmts;
       while (atEnd()) {
         Stmts.emplace_back(declaration());
       }
     }
 
-    AST::StmtAST Parser::declaration() {
+    AST::Stmt Parser::declaration() {
       if(match(1, tok::TokType::Fn)) {
         return fnDeclaration();
       }
@@ -38,7 +38,7 @@ namespace iridium {
       return statement();
     }
 
-    AST::StmtAST Parser::statement()  {
+    AST::Stmt Parser::statement()  {
       if(match(1, tok::TokType::For)) {
         return forStatement();
       }
