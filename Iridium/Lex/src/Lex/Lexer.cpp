@@ -169,20 +169,23 @@ namespace iridium {
   tok::Token Lexer::lexNumber() {
     std::string numString;
     while(std::isdigit(peek())) {
-      numString += advance();
+      advance();
     }
 
     // Find floating point numbers
     if (peek() == '.' && std::isdigit(peekNext())) {
-        numString += advance();
+      // Consume the '.'
+      advance();
         while(std::isdigit(peek())) {
-          numString += advance();
+          advance();
         }
+        numString = m_SourceCode.substr(m_TokenStartIndex, currentTokenLength());
         return addToken(tok::Token(currentTokenLength(), tok::TokType::f64, std::stod(numString)));
     }
 
     // If no decimal point found, return integer
-    return addToken(tok::Token(currentTokenLength(), tok::TokType::i64, (int64_t)std::stoi(numString)));
+    numString = m_SourceCode.substr(m_TokenStartIndex, currentTokenLength());
+    return addToken(tok::Token(currentTokenLength(), tok::TokType::i64, (int64_t)std::stol(numString)));
   }
 
   tok::Token Lexer::lexIdentifier() {
@@ -420,10 +423,10 @@ namespace iridium {
         break;
       // Literals
       case tok::TokType::i64:
-        type = "TOK::i64 " + std::to_string(token.geti64());
+        type = "TOK::i64: " + std::to_string(token.geti64());
         break;
       case tok::TokType::f64:
-        type = "TOK::f64 " + std::to_string(token.getf64());
+        type = "TOK::f64: " + std::to_string(token.getf64());
         break;
       case tok::TokType::String:
         type = "TOK::STRING: " + token.getString();

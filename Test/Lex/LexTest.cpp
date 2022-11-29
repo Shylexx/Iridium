@@ -1,6 +1,8 @@
+#include <exception>
 #include <gtest/gtest.h>
 
 #include <Lex/Token.h>
+#include <stdexcept>
 #include "Lex/Lexer.h"
 
 
@@ -44,7 +46,20 @@ TEST(LexTest, KeywordLexing) {
 TEST(LexTest, UnrecognisedChar) {
   iridium::Lexer lexer;
   lexer.LexString("testing ? char lexing");
-  std::cerr << lexer.DumpTokenTypes() << std::endl;
   EXPECT_EQ(lexer.errorCount(), 1);
   EXPECT_EQ(lexer.tokenCount(), 5);
+}
+
+TEST(LexTest, NumberLexing) {
+  iridium::Lexer lexer;
+  lexer.LexString("304 20.01 02.3 3 01");
+  EXPECT_EQ(lexer.errorCount(), 0);
+  EXPECT_EQ(lexer.tokenCount(), 6);
+}
+
+TEST(LexTest, StringLexing) {
+  iridium::Lexer lexer;
+  lexer.LexString("\"Hi, I am string 1\" \"Hello, I am string 2\"");
+  EXPECT_EQ(lexer.errorCount(), 0);
+  EXPECT_EQ(lexer.tokenCount(), 3);
 }
