@@ -27,6 +27,11 @@ namespace iridium {
       Enum,
       Trait,
       Static,
+
+      // Literal Keywords
+      i64KW,
+      f64KW,
+      StringKW,
     
       // Literals
       i64,

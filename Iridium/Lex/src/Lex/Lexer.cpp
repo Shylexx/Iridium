@@ -2,7 +2,6 @@
 #include "Lex/TokType.h"
 #include "Lex/Token.h"
 #include <iostream>
-#include <format>
 #include <cctype>
 
 namespace iridium {
@@ -79,8 +78,8 @@ namespace iridium {
         return lexString();
     }
 
-    std::string errorMessage = std::format("Unrecognised character '{}'", nextChar);
-    return tok::Token(0, tok::TokType::SyntaxError, errorMessage, m_CurrentLine);
+    std::string errorMessage = std::string("Unrecognised character '") + nextChar + "'";
+    return addToken(tok::Token(1, tok::TokType::SyntaxError, errorMessage, m_CurrentLine));
   }
 
   // Consume the character and move onto the next one
@@ -317,10 +316,10 @@ namespace iridium {
         return tok::TokType::For;
       }
       else if (str == "i64") {
-        return tok::TokType::i64;
+        return tok::TokType::i64KW;
       }
       else if (str == "f64") {
-        return tok::TokType::f64;
+        return tok::TokType::f64KW;
       }
       else {
         return tok::TokType::Identifier;
@@ -356,7 +355,7 @@ namespace iridium {
         return tok::TokType::Return;
       }
       else if (str == "String") {
-        return tok::TokType::String;
+        return tok::TokType::StringKW;
       }
       else {
         return tok::TokType::Identifier;
@@ -378,6 +377,7 @@ namespace iridium {
         break;
       case tok::TokType::SyntaxError:
         type = "TOK::SYNTAXERR: " + token.getString();
+        break;
       case tok::TokType::Identifier:
         type = "TOK::IDENTIFIER: " + token.getString();
         break;
@@ -409,15 +409,24 @@ namespace iridium {
       case tok::TokType::Struct:
         type = "TOK::STRUCT";
         break;
+      case tok::TokType::i64KW:
+        type = "TOK::i64KW";
+        break;
+      case tok::TokType::f64KW:
+        type = "TOK::f64KW";
+        break;
+      case tok::TokType::StringKW:
+        type = "TOK::STRINGKW";
+        break;
       // Literals
       case tok::TokType::i64:
-        type = "TOK::i64";
+        type = "TOK::i64 " + std::to_string(token.geti64());
         break;
       case tok::TokType::f64:
-        type = "TOK::f64";
+        type = "TOK::f64 " + std::to_string(token.getf64());
         break;
       case tok::TokType::String:
-        type = "TOK::STRING";
+        type = "TOK::STRING: " + token.getString();
         break;
       // Punctuators
       case tok::TokType::Period:

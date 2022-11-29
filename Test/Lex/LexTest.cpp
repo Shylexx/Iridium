@@ -40,3 +40,11 @@ TEST(LexTest, KeywordLexing) {
 	EXPECT_EQ(lexer.errorCount(), 0);
 	EXPECT_EQ(lexer.tokenCount(), 21);
 }
+
+TEST(LexTest, UnrecognisedChar) {
+  iridium::Lexer lexer;
+  lexer.LexString("testing ? char lexing");
+  std::cerr << lexer.DumpTokenTypes() << std::endl;
+  EXPECT_EQ(lexer.errorCount(), 1);
+  EXPECT_EQ(lexer.tokenCount(), 5);
+}
