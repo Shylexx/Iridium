@@ -25,6 +25,9 @@ namespace iridium {
   private:
     int m_CurTok = 0;
 
+    bool hasError = false;
+    std::string errMsg = "";
+
     AST::Unit m_CurUnit;
 
     // Index of the current nested scope
@@ -47,19 +50,30 @@ namespace iridium {
     bool check(tok::TokType type);
     // Equivalent of check but consumes the token
     bool match(tok::TokType type);
+    // helper for adding an error node;
+    std::unique_ptr<AST::Stmt> makeError(std::string errMsg);
+
     tok::Token consume(tok::TokType type, std::string errMessage);
 
-    std::unique_ptr<AST::Stmt> declaration();
-    std::unique_ptr<AST::Stmt> varDeclaration(tok::TokType type);
-    std::unique_ptr<AST::Stmt> fnDeclaration();
+    // Will consume any typename 
+    tok::Token consumeTy(std::string errMessage);
+
+    // Statements
     std::unique_ptr<AST::Stmt> statement();
-    std::unique_ptr<AST::Stmt> returnStatement();
+    std::unique_ptr<AST::Stmt> declaration();
+    // Items
+    std::unique_ptr<AST::Stmt> fnDeclaration();
+    std::unique_ptr<AST::Stmt> varDeclaration(tok::TokType type);
+
+    std::unique_ptr<AST::Stmt> exprStatement();
+
+
+    std::unique_ptr<AST::Stmt> returnExpr();
     std::unique_ptr<AST::Stmt> forStatement();
     std::unique_ptr<AST::Stmt> whileStatement();
     std::unique_ptr<AST::Stmt> blockStatement();
     std::unique_ptr<AST::Stmt> ifStatement();
-    std::unique_ptr<AST::Stmt> exprStatement();
-    std::unique_ptr<AST::Stmt> blockExpr();
+    std::vector<std::unique_ptr<AST::Stmt>> blockExpr();
 
   };
 } // namespace iridium

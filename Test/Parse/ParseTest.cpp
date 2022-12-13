@@ -15,3 +15,8 @@ TEST(ParseTest, VarDeclNeedsSemicolon) {
 	iridium::Parser parser;
 	parser.ParseFile("i64 noSemicolon");
 }
+
+TEST(ParseTest, FnDecl) {
+  iridium::Parser parser;
+  parser.ParseFile("fn testFunc(test: i64) {}");
+}

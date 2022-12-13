@@ -62,6 +62,7 @@ namespace iridium {
       case '{': return addToken(tok::Token(1, tok::TokType::OpenBrace));
       case '}': return addToken(tok::Token(1, tok::TokType::CloseBrace));
       case ';': return addToken(tok::Token(1, tok::TokType::Semicolon));
+      case ':': return addToken(tok::Token(1, tok::TokType::Colon));
       case ',': return addToken(tok::Token(1, tok::TokType::Comma));
       case '.': return addToken(tok::Token(1, tok::TokType::Period));
       case '+': return addToken(tok::Token(1, tok::TokType::Plus));

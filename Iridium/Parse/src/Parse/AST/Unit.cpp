@@ -8,14 +8,14 @@ namespace iridium {
 		}
 
 		bool Unit::error() {
-			AST::Err* ast = dynamic_cast<AST::Err*>(m_Items.back().get());
+			Err* ast = dynamic_cast<Err*>(m_Items.back().get());
 			return !(ast == nullptr);
 		}
 
 		void Unit::errMessage() {
 			AST::Err* ast = dynamic_cast<AST::Err*>(m_Items.back().get());
 
-			std::cerr << "Syntax Error on line [" << ast->sourceLine() << "]: " << ast->message() << std::endl;
+			std::cerr << "Syntax Error on line [" << ast->m_SourceLine << "]: " << ast->m_Message << std::endl;
 		}
 
 		void Unit::prettyPrint() {
