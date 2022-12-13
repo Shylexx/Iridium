@@ -73,7 +73,8 @@ namespace iridium {
       Slash,
 
       // 
-      Hash
+      Hash,
+      Arrow
     };
 
   } // namespace tok

@@ -37,6 +37,7 @@ namespace iridium {
       std::uint32_t getSize() const { return m_Size; }
     private:
       TokType m_TokType;
+      int m_SourceLine = 0;
       std::uint32_t m_Size;
       // Holds the value of the token( if it is a number or string)
       std::optional<std::string> m_ValueString;

@@ -1,20 +1,29 @@
 #ifndef __IRIDIUM_EXPR_AST_H__
 #define __IRIDIUM_EXPR_AST_H__
 
+#include "Parse/AST/Stmt.h"
+#include <string>
+#include <vector>
+#include <memory>
 
 namespace iridium {
 	namespace AST {
-		class ASTVisitor;
 
-		class ExprAST {
+		struct Expr : public Stmt {
 		public:
-			virtual ~ExprAST() {}
-			virtual void Accept(ASTVisitor* visitor) const = 0;
+			~Expr() override {}
 		};
 
-		class BinaryExprAST : public ExprAST {
+		struct BinaryExpr : public Expr {
 		public:
-			void Accept(ASTVisitor* visitor) const override;
+			~BinaryExpr() override {}
+		};
+
+		struct BlockExpr : public Expr {
+		public:
+			~BlockExpr() override {}
+		private:
+			std::vector<std::unique_ptr<Stmt>> m_Body;
 		};
 	}
 }

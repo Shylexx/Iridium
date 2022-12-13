@@ -6,6 +6,7 @@
 #include "Parse/AST/Stmt.h"
 #include "Parse/AST/Expr.h"
 #include "Lex/Token.h"
+#include "Parse/AST/Unit.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -18,8 +19,17 @@ namespace iridium {
 
     void ParseFile(const std::string& fileSource);
     void ParseTokenSet(const std::vector<tok::Token>& tokens);
+
+    void printSyntaxErrs();
+    void printLexedToks();
   private:
     int m_CurTok = 0;
+
+    AST::Unit m_CurUnit;
+
+    // Index of the current nested scope
+    // 0 is equivalent to global scope
+    int m_ScopeIndex = 0;
 
     std::unique_ptr<AST::Stmt> ParseStmt();
 
@@ -35,20 +45,21 @@ namespace iridium {
     tok::Token advance();
     // Checks the next token without consuming it and returns if it is correct
     bool check(tok::TokType type);
-    // Equivalent of check for multiple possible token types
-    bool match(int count, tok::TokType types...);
+    // Equivalent of check but consumes the token
+    bool match(tok::TokType type);
     tok::Token consume(tok::TokType type, std::string errMessage);
 
-    AST::Stmt declaration();
-    AST::Stmt fnDeclaration();
-    AST::Stmt statement();
-    AST::Stmt returnStatement();
-    AST::Stmt forStatement();
-    AST::Stmt whileStatement();
-    AST::Stmt blockStatement();
-    AST::Stmt ifStatement();
-    AST::Stmt exprStatement();
-    AST::Stmt scopeStatement();
+    std::unique_ptr<AST::Stmt> declaration();
+    std::unique_ptr<AST::Stmt> varDeclaration(tok::TokType type);
+    std::unique_ptr<AST::Stmt> fnDeclaration();
+    std::unique_ptr<AST::Stmt> statement();
+    std::unique_ptr<AST::Stmt> returnStatement();
+    std::unique_ptr<AST::Stmt> forStatement();
+    std::unique_ptr<AST::Stmt> whileStatement();
+    std::unique_ptr<AST::Stmt> blockStatement();
+    std::unique_ptr<AST::Stmt> ifStatement();
+    std::unique_ptr<AST::Stmt> exprStatement();
+    std::unique_ptr<AST::Stmt> blockExpr();
 
   };
 } // namespace iridium

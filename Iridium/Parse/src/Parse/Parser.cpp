@@ -2,6 +2,8 @@
 #include "Lex/Lexer.h"
 #include "Lex/TokType.h"
 #include "Parse/AST/Stmt.h"
+#include "Parse/AST/Expr.h"
+#include <iostream>
 #include <cstdarg>
 
 namespace iridium {
@@ -15,48 +17,60 @@ namespace iridium {
     void Parser::ParseFile(const std::string& source) {
       m_Lexer->LexString(source);
 
-      std::vector<AST::Stmt> Stmts;
-      while (atEnd()) {
-        Stmts.emplace_back(declaration());
+      while (!atEnd()) {
+        m_CurUnit.add(declaration());
+        if (m_CurUnit.error()) {
+          m_CurUnit.errMessage();
+        }
       }
     }
 
-    AST::Stmt Parser::declaration() {
-      if(match(1, tok::TokType::Fn)) {
+    std::unique_ptr<AST::Stmt> Parser::declaration() {
+      // The only top level declarations are variables
+      // (Functions are also variables)
+      if (match(tok::TokType::Fn)) {
         return fnDeclaration();
       }
       //if(match(tok::TokType::Struct)) {
       //  return structDeclaration();
       //}
-      if(match(1, tok::TokType::i64)) {
+      if (match(tok::TokType::i64KW)) {
+        return varDeclaration(tok::TokType::i64);
       }
-      if(match(1, tok::TokType::f64)) {
+      if (match(tok::TokType::f64KW)) {
+        return varDeclaration(tok::TokType::f64);
       }
-      if(match(1, tok::TokType::String)) {
+      if (match(tok::TokType::StringKW)) {
+        return varDeclaration(tok::TokType::String);
       }
 
-      return statement();
+      // Only look for other statements if we are not in the global scope (can be a function body)
+      if (m_ScopeIndex > 0) {
+        return statement();
+      }
+
+      return std::make_unique<AST::Err>("Can only Declare Functions or Variables in Global scope!");
     }
 
-    AST::Stmt Parser::statement()  {
-      if(match(1, tok::TokType::For)) {
+    std::unique_ptr<AST::Stmt> Parser::statement()  {
+      if(match(tok::TokType::For)) {
         return forStatement();
       }
 
-      if(match(1, tok::TokType::If)) {
+      if(match(tok::TokType::If)) {
         return ifStatement();
       }
 
-      if(match(1, tok::TokType::Return)) {
+      if(match(tok::TokType::Return)) {
         return returnStatement();
       }
 
-      if(match(1, tok::TokType::While)) {
+      if(match(tok::TokType::While)) {
         return whileStatement();
       }
 
-      if(match(1, tok::TokType::OpenBrace)) {
-        return scopeStatement();
+      if(match(tok::TokType::OpenBrace)) {
+        return blockExpr();
       }
 
       return exprStatement();
@@ -69,25 +83,21 @@ namespace iridium {
       return peek().getTokType() == type;
     }
 
-    bool Parser::match(int count, tok::TokType types...) {
-      va_list args;
-      va_start(args, types);
-
-      for(int i = 0; i < count; i++) {
-          if(check(va_arg(args, tok::TokType))) {
-            va_end(args);
-            return true; 
-          }
+    bool Parser::match(tok::TokType type) {
+      if (!check(type)) {
+        return false;
       }
-
-      va_end(args);
-      return false;
+      advance();
+      return true;
     }
+
 
     tok::Token Parser::consume(tok::TokType type, std::string errMessage) {
       if (check(type)) {
         return advance();
       } else {
+        std::cerr << "Parse Error: " << errMessage << std::endl;
+        m_CurUnit.add(std::move(std::make_unique<AST::Err>("Unexpected Token Type!")));
         return tok::Token(0, tok::TokType::ParseError, errMessage);
       }
     }
@@ -109,5 +119,58 @@ namespace iridium {
 
     bool Parser::atEnd() {
       return peek().getTokType() == tok::TokType::EndOfFile;
+    }
+    
+
+    std::unique_ptr<AST::Stmt> Parser::varDeclaration(tok::TokType type) {
+      tok::Token name = consume(tok::TokType::Identifier, "Expected Identifier For Variable!");
+
+      consume(tok::TokType::Semicolon, "Expected ';' after variable declaration!");
+
+      std::cout << "Parsed a Variable Declaration of name " << name.getString() << std::endl;
+      return std::make_unique<AST::VarDeclStmt>(name.getString());
+    }
+
+    std::unique_ptr<AST::Stmt> Parser::fnDeclaration() {
+
+      return std::make_unique<AST::IfStmt>();
+    }
+
+    std::unique_ptr<AST::Stmt> Parser::returnStatement() {
+
+      return std::make_unique<AST::IfStmt>();
+    }
+
+    std::unique_ptr<AST::Stmt> Parser::forStatement() {
+
+      return std::make_unique<AST::IfStmt>();
+    }
+
+    std::unique_ptr<AST::Stmt> Parser::whileStatement() {
+
+      return std::make_unique<AST::IfStmt>();
+    }
+
+    std::unique_ptr<AST::Stmt> Parser::ifStatement() {
+
+      return std::make_unique<AST::IfStmt>();
+    }
+
+    std::unique_ptr<AST::Stmt> Parser::exprStatement() {
+      
+      return std::make_unique<AST::IfStmt>();
+    }
+
+    std::unique_ptr<AST::Stmt> Parser::blockExpr() {
+
+      return std::make_unique<AST::IfStmt>();
+    }
+    
+    void Parser::printSyntaxErrs() {
+      m_Lexer->syntaxErrorsToCerr();
+    }
+
+    void Parser::printLexedToks() {
+      std::cout << m_Lexer->DumpTokenTypes() << std::endl;
     }
 } // namespace iridium

@@ -64,12 +64,13 @@ namespace iridium {
       case ';': return addToken(tok::Token(1, tok::TokType::Semicolon));
       case ',': return addToken(tok::Token(1, tok::TokType::Comma));
       case '.': return addToken(tok::Token(1, tok::TokType::Period));
-      case '-': return addToken(tok::Token(1, tok::TokType::Minus));
       case '+': return addToken(tok::Token(1, tok::TokType::Plus));
       case '*': return addToken(tok::Token(1, tok::TokType::Asterisk));
       case '/': return addToken(tok::Token(1, tok::TokType::Slash));
       case '&': return addToken(tok::Token(1, tok::TokType::Ampersand));
       // Two char punctuators
+      case '-':
+        return match('>') ? addToken(tok::Token(1, tok::TokType::Arrow)) : addToken(tok::Token(1, tok::TokType::Minus));
       case '!':
         return match('=') ? addToken(tok::Token(1, tok::TokType::NotEqual)) : addToken(tok::Token(1, tok::TokType::Exclaim));
       case '=':
