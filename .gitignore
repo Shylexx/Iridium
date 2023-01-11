@@ -36,3 +36,7 @@ build/
 
 # clangd cache file
 /.cache
+
+
+# rebuild script for cmake :D
+# rebuild.sh

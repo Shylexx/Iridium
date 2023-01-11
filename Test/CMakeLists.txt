@@ -34,6 +34,7 @@ target_link_libraries(LexTEST
   IridiumLex
 )
 
+# Parser testing
 add_executable(ParseTEST
   Parse/ParseTest.cpp
 )
@@ -43,8 +44,19 @@ target_link_libraries(ParseTEST
   IridiumParse
 )
 
+# Codegen testing
+add_executable(CodegenTEST
+  Codegen/CodegenTest.cpp
+)
+
+target_link_libraries(CodegenTEST
+  GTest::gtest_main
+  IridiumCodegen
+)
+
 include(GoogleTest)
 gtest_discover_tests(GTEST_SANITY)
 
 gtest_discover_tests(LexTEST)
 gtest_discover_tests(ParseTEST)
+gtest_discover_tests(CodegenTEST)
