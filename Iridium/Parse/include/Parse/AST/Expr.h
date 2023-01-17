@@ -23,6 +23,7 @@ public:
   BinaryExpr(tok::TokType oper, std::unique_ptr<Expr> LHS,
              std::unique_ptr<Expr> RHS)
       : op(oper), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
+  llvm::Value* codegen() override; 
 
   tok::TokType op;
   std::unique_ptr<Expr> LHS;

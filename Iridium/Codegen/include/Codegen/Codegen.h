@@ -6,7 +6,6 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
 
-#include "Codegen/ASTVisitor.h"
 #include "Parse/AST/Expr.h"
 
 // Code Generator Driver
