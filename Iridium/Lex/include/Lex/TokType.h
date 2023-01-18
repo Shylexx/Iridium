@@ -36,6 +36,7 @@ namespace iridium {
       StringKW,
     
       // Literals
+      Bool,
       i64,
       f64,
       String,
@@ -65,6 +66,7 @@ namespace iridium {
       GreaterThan,
       LessOrEqual,
       GreaterOrEqual,
+      QuestionMark,
 
       // Binop Calculation
       Plus,

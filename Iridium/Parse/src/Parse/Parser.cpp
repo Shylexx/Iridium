@@ -4,6 +4,7 @@
 #include "Lex/Token.h"
 #include "Parse/AST/Stmt.h"
 #include "Parse/AST/Expr.h"
+#include "Parse/Type/Type.h"
 #include <iostream>
 #include <memory>
 #include <cstdarg>
@@ -66,9 +67,6 @@ namespace iridium {
         return ifStatement();
       }
 
-      if(match(tok::TokType::Return)) {
-        return returnExpr();
-      }
 
       if(match(tok::TokType::While)) {
         return whileStatement();
@@ -171,7 +169,7 @@ namespace iridium {
         return makeError(errMsg);
       }
 
-      std::vector<std::pair<tok::Token, tok::Token>> params;
+      std::vector<std::pair<tok::Token, ty::Type>> params;
       // If there are params, add them to the list.
       if(!check(tok::TokType::CloseParen)) {
         do {
@@ -187,7 +185,7 @@ namespace iridium {
           if (hasError) {
             return makeError(errMsg);
           }
-          params.push_back(std::make_pair<tok::Token, tok::Token>(std::move(paramName), std::move(paramType)));
+          params.push_back(std::make_pair<tok::Token, ty::Type>(std::move(paramName), ty::from_tok(paramType.getTokType())));
         } while (match(tok::TokType::Comma));
       }
 
@@ -206,9 +204,12 @@ namespace iridium {
       return std::make_unique<AST::FnStmt>(name, std::move(params), std::move(body));
     }
 
-    std::unique_ptr<AST::Stmt> Parser::returnExpr() {
-
-      return std::make_unique<AST::Err>("Unimplemented!");
+    std::unique_ptr<AST::Expr> Parser::returnExpr() {
+      if(check(tok::TokType::Semicolon)) {
+        return std::make_unique<AST::ReturnExpr>();
+      } else {
+        return std::make_unique<AST::ReturnExpr>(std::move(expression()));
+      }
     }
 
     std::unique_ptr<AST::Stmt> Parser::forStatement() {
@@ -227,8 +228,78 @@ namespace iridium {
     }
 
     std::unique_ptr<AST::Stmt> Parser::exprStatement() {
+
+      if(match(tok::TokType::Return)) {
+        return std::make_unique<AST::ExprStmt>(returnExpr());
+      }
       
-      return std::make_unique<AST::Err>("Unimplemented!");
+      return std::make_unique<AST::ExprStmt>(expression());
+    }
+
+    std::unique_ptr<AST::Expr> Parser::expression() {
+      return ternary();
+    }
+
+    std::unique_ptr<AST::Expr> Parser::ternary() {
+      auto expr = term();
+
+      if(match(tok::TokType::QuestionMark)) {
+        auto thenBranch = ternary();
+        consume(tok::TokType::Colon, "Expected colon after ternary condition.");
+        auto elseBranch = ternary();
+        // return std::make_unique<AST::TernaryExpr>(expr, thenBranch, elseBranch);
+      }
+
+      return expr;
+    }
+
+    std::unique_ptr<AST::Expr> Parser::term() {
+      std::unique_ptr<AST::Expr> expr = factor();
+
+      while(match(tok::TokType::Minus) || match(tok::TokType::Plus)) {
+        tok::TokType op = previous().getTokType();
+        std::unique_ptr<AST::Expr> right = factor();
+        return std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(right));
+      }
+
+      return expr;
+    }
+    std::unique_ptr<AST::Expr> Parser::factor() {
+      std::unique_ptr<AST::Expr> expr = unary();
+
+      while(match(tok::TokType::Slash) || match(tok::TokType::Asterisk)) {
+        tok::TokType op = previous().getTokType();
+        std::unique_ptr<AST::Expr> right = unary();
+        return std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(right));
+      }
+
+      return expr;
+    }
+
+    std::unique_ptr<AST::Expr> Parser::unary() {
+      // unary expr when ready :)
+      /*if (match(tok::TokType::Minus)) {
+        tok::TokType op = previous().getTokType();
+        std::unique_ptr<AST::Expr> expr = unary();
+        return std::make_unique<AST::UnaryExpr>(op, std::move(expr));
+      }
+      */
+
+      return primary();
+    }
+
+    std::unique_ptr<AST::Expr> Parser::primary() {
+      advance();
+      switch(previous().getTokType()) {
+        case tok::TokType::i64:
+          return std::make_unique<AST::IntExpr>(previous().geti64());
+        case tok::TokType::f64:
+          return std::make_unique<AST::IntExpr>(previous().getf64());        
+        case tok::TokType::Identifier:
+          return std::make_unique<AST::VarExpr>(previous().getString());
+        default:
+          return std::make_unique<AST::ErrExpr>();
+      }
     }
 
     std::vector<std::unique_ptr<AST::Stmt>> Parser::blockExpr() {

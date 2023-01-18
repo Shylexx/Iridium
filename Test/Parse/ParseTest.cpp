@@ -20,3 +20,8 @@ TEST(ParseTest, FnDecl) {
   iridium::Parser parser;
   parser.ParseFile("fn testFunc(test: i64) {}");
 }
+
+TEST(ParseTest, BinopExpr) {
+  iridium::Parser parser;
+  parser.ParseFile("fn testFunction(test: i64) { return 3 + 3; }");
+}

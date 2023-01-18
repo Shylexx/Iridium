@@ -4,7 +4,9 @@ message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 add_library(IridiumParse STATIC
   src/Parse/Parser.cpp
+  src/Parse/AST/ASTVisitor.cpp
   src/Parse/AST/Unit.cpp
+  src/Parse/Type/Type.cpp
 )
 
 target_include_directories(IridiumParse

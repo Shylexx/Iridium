@@ -22,13 +22,13 @@ namespace iridium {
 
     void printSyntaxErrs();
     void printLexedToks();
+    AST::Unit m_CurUnit;
   private:
     int m_CurTok = 0;
 
     bool hasError = false;
     std::string errMsg = "";
 
-    AST::Unit m_CurUnit;
 
     // Index of the current nested scope
     // 0 is equivalent to global scope
@@ -67,8 +67,15 @@ namespace iridium {
 
     std::unique_ptr<AST::Stmt> exprStatement();
 
+    std::unique_ptr<AST::Expr> expression();
+    std::unique_ptr<AST::Expr> ternary();
+    std::unique_ptr<AST::Expr> term();
+    std::unique_ptr<AST::Expr> factor();
+    std::unique_ptr<AST::Expr> unary();
+    std::unique_ptr<AST::Expr> primary();
 
-    std::unique_ptr<AST::Stmt> returnExpr();
+
+    std::unique_ptr<AST::Expr> returnExpr();
     std::unique_ptr<AST::Stmt> forStatement();
     std::unique_ptr<AST::Stmt> whileStatement();
     std::unique_ptr<AST::Stmt> blockStatement();

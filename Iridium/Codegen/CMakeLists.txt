@@ -2,6 +2,7 @@ add_library(IridiumCodegen STATIC
 	src/Codegen/Codegen.cpp
 	src/Codegen/ExprCodegen.cpp
 	src/Codegen/FnCodegen.cpp
+	src/Codegen/StmtCodegen.cpp
 )
 
 target_include_directories(IridiumCodegen

@@ -10,18 +10,16 @@
 // The Unit class represents a Compilation unit!
 
 namespace iridium {
-	namespace AST {
-		class Unit {
-		public:
-			void addGlobal();
-			void add(std::unique_ptr<AST::Stmt> stmt);
-			void prettyPrint();
-			bool error();
-			void errMessage();
-		private:
-			std::vector<std::unique_ptr<AST::Stmt>> m_Items;
-
-		};
-	}
+namespace AST {
+  class Unit {
+  public:
+    std::vector<std::unique_ptr<AST::Stmt>> m_Items;
+    void addGlobal();
+    void add(std::unique_ptr<AST::Stmt> stmt);
+    void prettyPrint();
+    bool error();
+    void errMessage();
+  };
+}
 }
 #endif

@@ -27,7 +27,7 @@ namespace iridium {
         : m_Size(size), m_TokType(tokenType), m_Valuef64(f64) {}
 
       TokType getTokType() const { return m_TokType; }
-      std::string getString() { return m_ValueString.value(); }
+      std::string getString() const { return m_ValueString.value(); }
       std::int64_t geti64() { return m_Valuei64.value(); }
       double getf64() { return m_Valuef64.value(); }
       bool hasString() { return m_ValueString.has_value(); }
