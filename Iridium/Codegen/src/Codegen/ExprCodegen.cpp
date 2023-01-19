@@ -36,6 +36,18 @@ llvm::Value *Codegen::VisitBinaryExpr(const AST::BinaryExpr *expr) {
   }
 }
 
+llvm::Value* Codegen::VisitErrExpr(const AST::ErrExpr *expr) {
+  return nullptr;
+}
+
+llvm::Value* Codegen::VisitVarExpr(const AST::VarExpr *expr) {
+  return nullptr;
+}
+
+llvm::Value* Codegen::VisitBlockExpr(const AST::BlockExpr *expr) {
+  return nullptr;
+}
+
 llvm::Value *Codegen::VisitCallExpr(const AST::CallExpr *expr) {
     llvm::Function* callee = m_Module->getFunction(expr->Callee);
     if (!callee) {

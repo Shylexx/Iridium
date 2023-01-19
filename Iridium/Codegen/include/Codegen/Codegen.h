@@ -20,6 +20,7 @@ public:
   Codegen();
 
   void GenUnit(AST::Unit& unit);
+  void PrintIR();
   // statements
   void VisitExprStmt(const AST::ExprStmt *stmt) override; // TODO
   void VisitFnStmt(const AST::FnStmt *stmt) override; // TODO

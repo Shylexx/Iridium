@@ -14,7 +14,9 @@ namespace iridium {
     for(auto& decl : unit.m_Items) {
       decl->Accept(this);
     }
+  }
 
+  void Codegen::PrintIR() {
     llvm::errs() << *m_Module;
     fprintf(stderr, "\n");
   }
