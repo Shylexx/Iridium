@@ -240,6 +240,22 @@ namespace iridium {
       return ternary();
     }
 
+    std::unique_ptr<AST::Expr> Parser::paren() {
+      // consume the open paren
+      advance();
+
+      auto V = expression();
+      if (!V)
+        return nullptr;
+
+      if (peek().getTokType() != tok::TokType::CloseParen)
+        return std::make_unique<AST::ErrExpr>();
+
+      // consume close bracket 
+      advance();
+      return V;
+    }
+
     std::unique_ptr<AST::Expr> Parser::ternary() {
       auto expr = term();
 
@@ -288,15 +304,52 @@ namespace iridium {
       return primary();
     }
 
-    std::unique_ptr<AST::Expr> Parser::primary() {
+    std::unique_ptr<AST::Expr> Parser::identifier() {
+      // consume the identifier
+      std::string name = advance().getString();
+
+      // If no bracket, its a var ref
+      if (peek().getTokType() != tok::TokType::OpenParen) 
+        return std::make_unique<AST::VarExpr>(previous().getString());
+
+      // otherwise, Function Call
+      // consume the '('
       advance();
-      switch(previous().getTokType()) {
+      std::vector<std::unique_ptr<AST::Expr>> args;
+      if (peek().getTokType() != tok::TokType::CloseParen) {
+        while(1) {
+          if(auto Arg = expression())
+            args.push_back(std::move(Arg));
+          else
+            return nullptr;
+
+          if(peek().getTokType() == tok::TokType::CloseParen)
+            break;
+
+          if(peek().getTokType() != tok::TokType::Comma)
+            return nullptr;
+
+          // consume the comma
+          advance();
+        }
+      }
+
+      // consume closing ')'
+      advance();
+
+      return std::make_unique<AST::CallExpr>(name, std::move(args));
+    }
+
+    std::unique_ptr<AST::Expr> Parser::primary() {
+      switch(peek().getTokType()) {
         case tok::TokType::i64:
           return std::make_unique<AST::IntExpr>(previous().geti64());
         case tok::TokType::f64:
           return std::make_unique<AST::IntExpr>(previous().getf64());        
         case tok::TokType::Identifier:
-          return std::make_unique<AST::VarExpr>(previous().getString());
+          return identifier();
+        case tok::TokType::OpenParen:
+          return paren();
         default:
           return std::make_unique<AST::ErrExpr>();
       }
