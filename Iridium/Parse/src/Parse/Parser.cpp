@@ -116,7 +116,10 @@ namespace iridium {
       if (
           check(tok::TokType::StringKW)
           || check(tok::TokType::i64KW)
+          || check(tok::TokType::i32KW)
           || check(tok::TokType::f64KW)
+          || check(tok::TokType::f32KW)
+          || check(tok::TokType::BoolKW)
          ) {
         return advance();
       } else {

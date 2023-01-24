@@ -35,10 +35,17 @@ namespace iridium {
 	m_Builder->SetInsertPoint(basicBlock);
 
 	// Making params available to the function
+	
+
 	/*
-	NamedValues.clear();
-	for(auto& Arg : func->args())
-	    NamedValues[Arg.getName()] = &Arg;
+	m_NamedValues.clear();
+	for(auto& Arg : func->args()) {
+	    int paramNo = Arg.getArgNo();
+	    std::string argName = stmt->params[paramNo].first.getString();
+	    llvm::Type* argType = func->getFunctionType()->getParamType(paramNo);
+	    m_NamedValues[argName] = m_Builder->CreateAlloca(argType, nullptr, llvm::Twine(argName));
+	    m_Builder->CreateStore(&Arg, m_NamedValues[argName]);
+	}
 	*/
 
 	for(auto& bodyStmt : stmt->body) {
