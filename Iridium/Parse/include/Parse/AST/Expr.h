@@ -15,18 +15,22 @@ namespace AST {
 class Stmt;
 
 class Expr {
+protected:
+  Expr(ty::Type type)
+    : retType(type) {}
+
 public:
   virtual ~Expr() = default;
   // All expressions return something, if not specified, its void.
-  ty::Type retType = ty::Type::Ty_Void;
+  ty::Type retType;
   virtual llvm::Value* Accept(ASTVisitor* visitor) const = 0;
 };
 
 class UnaryExpr : public Expr {
 public:
   ~UnaryExpr() override {}
-  UnaryExpr(tok::TokType oper, std::unique_ptr<Expr> RHS)
-    : Op(oper), RHS(std::move(RHS)) {}
+  UnaryExpr(tok::TokType oper, std::unique_ptr<Expr> RHS, ty::Type type)
+    : Op(oper), RHS(std::move(RHS)), Expr(type) {}
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitUnaryExpr(this);
@@ -40,8 +44,8 @@ class BinaryExpr : public Expr {
 public:
   ~BinaryExpr() override {}
   BinaryExpr(tok::TokType oper, std::unique_ptr<Expr> LHS,
-             std::unique_ptr<Expr> RHS)
-      : op(oper), LHS(std::move(LHS)), RHS(std::move(RHS)) {}
+             std::unique_ptr<Expr> RHS, ty::Type type)
+      : op(oper), LHS(std::move(LHS)), RHS(std::move(RHS)), Expr(type) {}
   llvm::Value* Accept(ASTVisitor* visitor) const override {
      return visitor->VisitBinaryExpr(this);
   }
@@ -53,7 +57,7 @@ public:
 
 class IntExpr : public Expr {
 public:
-  IntExpr(int value) : Val(value) {}
+  IntExpr(int value, ty::Type type) : Val(value), Expr(type) {}
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitIntExpr(this);
   }
@@ -62,7 +66,7 @@ public:
 
 class FloatExpr : public Expr {
 public:
-  FloatExpr(float value) : Val(value) {}
+  FloatExpr(float value, ty::Type type) : Val(value), Expr(type) {}
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitFloatExpr(this);
@@ -73,7 +77,7 @@ public:
 
 class BoolExpr : public Expr {
 public:
-  BoolExpr(bool value) : Val(value) {}
+  BoolExpr(bool value, ty::Type type) : Val(value), Expr(type) {}
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitBoolExpr(this);
   }
@@ -83,7 +87,7 @@ public:
 class BlockExpr : public Expr {
 public:
   ~BlockExpr() override {}
-  BlockExpr(std::vector<std::unique_ptr<Stmt>> body) : body(std::move(body)) {}
+  BlockExpr(std::vector<std::unique_ptr<Stmt>> body, ty::Type type) : body(std::move(body)), Expr(type) {}
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitBlockExpr(this);
   }
@@ -95,8 +99,8 @@ private:
 class CallExpr : public Expr {
 public:
   ~CallExpr() override {}
-  CallExpr(const std::string &callee, std::vector<std::unique_ptr<Expr>> args)
-      : Callee(callee), Args(std::move(args)) {}
+  CallExpr(const std::string &callee, std::vector<std::unique_ptr<Expr>> args, ty::Type type)
+      : Callee(callee), Args(std::move(args)), Expr(type) {}
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitCallExpr(this);
   }
@@ -108,10 +112,10 @@ public:
 class ReturnExpr : public Expr {
 public:
   ~ReturnExpr() override {}
-  ReturnExpr(std::unique_ptr<Expr> value)
-    : Val(std::move(value)) {}
+  ReturnExpr(std::unique_ptr<Expr> value, ty::Type type)
+    : Val(std::move(value)), Expr(type) {}
 
-  ReturnExpr() = default;
+  ReturnExpr(ty::Type type = ty::Type::Ty_Void) : Expr(type) {}
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitReturnExpr(this);
@@ -124,8 +128,8 @@ class VarExpr : public Expr {
 public:
   ~VarExpr() override {}
 
-  VarExpr(const std::string& identifier)
-    : Iden(identifier) {}
+  VarExpr(const std::string& identifier, ty::Type type)
+    : Iden(identifier), Expr(type) {}
 
   std::string Iden;
 
@@ -140,8 +144,8 @@ public:
   ~AssignExpr() override {}
 
   AssignExpr(const std::string& name,
-      std::unique_ptr<AST::Expr> value)
-    : Name(name), Val(std::move(value)) {}
+      std::unique_ptr<AST::Expr> value, ty::Type type)
+    : Name(name), Val(std::move(value)), Expr(type) {}
 
   std::string Name = "";
   std::unique_ptr<AST::Expr> Val;
@@ -162,8 +166,8 @@ public:
   ~LogicalExpr() override {}
 
   LogicalExpr(AST::LogicOp op, std::unique_ptr<AST::Expr> left,
-      std::unique_ptr<AST::Expr> right)
-      : Op(op), LHS(std::move(left)), RHS(std::move(right)) {}
+      std::unique_ptr<AST::Expr> right, ty::Type type)
+      : Op(op), LHS(std::move(left)), RHS(std::move(right)), Expr(type) {}
 
   AST::LogicOp Op;
   std::unique_ptr<AST::Expr> LHS;
@@ -178,9 +182,10 @@ class ErrExpr : public Expr {
 public:
   ~ErrExpr() override {}
 
-  ErrExpr() = default;
-  ErrExpr(const std::string& errMsg) 
-    : Msg(errMsg) {}
+  ErrExpr(const std::string& errMsg, ty::Type type = ty::Type::Ty_Err) 
+    : Msg(errMsg), Expr(type) {}
+
+  const std::string& message() const { return Msg; }
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitErrExpr(this);

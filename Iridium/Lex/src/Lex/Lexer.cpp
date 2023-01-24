@@ -330,6 +330,12 @@ namespace iridium {
       else if (str == "f64") {
         return tok::TokType::f64KW;
       }
+      else if (str == "i32") {
+        return tok::TokType::i32KW;
+      }
+      else if (str == "f32") {
+        return tok::TokType::f32KW;
+      }
       else {
         return tok::TokType::Identifier;
       }
@@ -340,6 +346,9 @@ namespace iridium {
       }
       else if (str == "enum") {
         return tok::TokType::Enum;
+      } 
+      else if (str == "bool") {
+        return tok::TokType::BoolKW;
       }
       else {
         return tok::TokType::Identifier;
@@ -424,6 +433,12 @@ namespace iridium {
       case tok::TokType::f64KW:
         type = "TOK::f64KW";
         break;
+      case tok::TokType::i32KW:
+        type = "TOK::i32KW";
+        break;
+      case tok::TokType::f32KW:
+        type = "TOK::f32KW";
+        break;
       case tok::TokType::StringKW:
         type = "TOK::STRINGKW";
         break;
@@ -506,6 +521,9 @@ namespace iridium {
         break;
       case tok::TokType::Exclaim:
         type = "TOK::EXCLAIM";
+        break;
+      case tok::TokType::Arrow:
+        type = "TOK::ARROW";
         break;
       case tok::TokType::Hash:
         type = "TOK::HASH";

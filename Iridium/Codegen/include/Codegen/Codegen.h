@@ -11,6 +11,8 @@
 #include "Parse/AST/Expr.h"
 #include "Parse/AST/Unit.h"
 #include "Parse/Type/Type.h"
+#include <iostream>
+#include <map>
 
 // Code Generator Driver
 
@@ -42,11 +44,17 @@ public:
   llvm::Value* VisitLogicalExpr(const AST::LogicalExpr *expr) override;
   llvm::Value* VisitUnaryExpr(const AST::UnaryExpr *expr) override;
 
+  llvm::Value* GenError(const char *Str) {
+    std::cerr << "Codegen Error: " << Str << std::endl;
+    return nullptr;
+  }
+
 private:
   llvm::Type* from_Ty(ty::Type type);
   std::unique_ptr<llvm::LLVMContext> m_Context;
   std::unique_ptr<llvm::IRBuilder<>> m_Builder;
   std::unique_ptr<llvm::Module> m_Module;
+  std::map<std::string, llvm::Value*> m_NamedValues;
 };
 } // namespace iridium
 

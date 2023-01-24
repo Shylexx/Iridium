@@ -45,8 +45,14 @@ namespace iridium {
       if (match(tok::TokType::i64KW)) {
         return varDeclaration(tok::TokType::i64);
       }
+      if (match(tok::TokType::i32KW)) {
+        return varDeclaration(tok::TokType::i32);
+      }
       if (match(tok::TokType::f64KW)) {
         return varDeclaration(tok::TokType::f64);
+      }
+      if (match(tok::TokType::f32KW)) {
+        return varDeclaration(tok::TokType::f32);
       }
       if (match(tok::TokType::StringKW)) {
         return varDeclaration(tok::TokType::String);
@@ -151,13 +157,18 @@ namespace iridium {
         return makeError(errMsg);
       }
 
+      std::unique_ptr<AST::Expr> initializer;
+      if(match(tok::TokType::Assignment)) {
+        initializer = expression();
+      }
+
       consume(tok::TokType::Semicolon, "Expected ';' after variable declaration!");
       if (hasError) {
         return makeError(errMsg);
       }
 
       std::cout << "Parsed a Variable Declaration of name " << name.getString() << std::endl;
-      return std::make_unique<AST::VarDeclStmt>(name.getString());
+      return std::make_unique<AST::VarDeclStmt>(name.getString(), ty::from_keyword(type), std::move(initializer));
     }
 
     std::unique_ptr<AST::Stmt> Parser::fnDeclaration() {
@@ -198,6 +209,17 @@ namespace iridium {
         return makeError(errMsg);
       }
 
+      ty::Type retType = ty::Type::Ty_Void;
+      if(match(tok::TokType::Arrow)) {
+        tok::TokType tokType = advance().getTokType();
+        ty::Type maybeType = ty::from_keyword(tokType);
+        if(maybeType != ty::Type::Ty_Err) {
+          retType = maybeType;
+        } else {
+          std::cerr << "Expected typename after function return type specifier" << std::endl;
+        }
+      }
+
       consume(tok::TokType::OpenBrace, "Expected '{' after function declaration");
       if (hasError) {
         return makeError(errMsg);
@@ -205,14 +227,20 @@ namespace iridium {
       std::vector<std::unique_ptr<AST::Stmt>> body = blockExpr();
 
       std::cout << "Parsed a function with name: " << name << " and arity of " << params.size() << std::endl;
-      return std::make_unique<AST::FnStmt>(name, std::move(params), std::move(body));
+      return std::make_unique<AST::FnStmt>(name, std::move(params), retType, std::move(body));
     }
 
     std::unique_ptr<AST::Expr> Parser::returnExpr() {
+      std::cerr << "Parsing return" << std::endl;
       if(check(tok::TokType::Semicolon)) {
+        std::cerr << "Parsing empty return" << std::endl;
         return std::make_unique<AST::ReturnExpr>();
       } else {
-        return std::make_unique<AST::ReturnExpr>(std::move(expression()));
+        std::cerr << "Parsing return expr" << std::endl;
+        std::unique_ptr<AST::Expr> expr = expression();
+        auto returnExpr = std::make_unique<AST::ReturnExpr>(std::move(expr), expr->retType);
+        consume(tok::TokType::Semicolon, "Expected ';' after return expression");
+        return std::move(returnExpr);
       }
     }
 
@@ -232,12 +260,13 @@ namespace iridium {
     }
 
     std::unique_ptr<AST::Stmt> Parser::exprStatement() {
+      std::unique_ptr<AST::Expr> expr;
 
       if(match(tok::TokType::Return)) {
-        return std::make_unique<AST::ExprStmt>(returnExpr());
+        expr = returnExpr();
       }
       
-      return std::make_unique<AST::ExprStmt>(expression());
+      return std::make_unique<AST::ExprStmt>(std::move(expr));
     }
 
     std::unique_ptr<AST::Expr> Parser::expression() {
@@ -256,7 +285,8 @@ namespace iridium {
 
         if(m_Lexer->get(m_CurTok - 2).getTokType() == tok::TokType::Identifier) {
           std::string target = static_cast<AST::VarExpr*>(expr.get())->Iden;
-          return std::make_unique<AST::AssignExpr>(target, std::move(value));
+          ty::Type type = static_cast<AST::VarExpr*>(expr.get())->retType;
+          return std::make_unique<AST::AssignExpr>(target, std::move(value), type);
         } else {
           return std::make_unique<AST::ErrExpr>("Cannot assign a value to that target");
         }
@@ -269,7 +299,7 @@ namespace iridium {
 
       while(match(tok::TokType::Logical_OR)) {
         std::unique_ptr<AST::Expr> rhs = andExpr();
-        expr = std::make_unique<AST::LogicalExpr>(AST::LogicOp::OP_OR, std::move(expr), std::move(rhs));
+        expr = std::make_unique<AST::LogicalExpr>(AST::LogicOp::OP_OR, std::move(expr), std::move(rhs), ty::Type::Ty_Bool);
       }
 
       return expr;
@@ -280,7 +310,7 @@ namespace iridium {
 
       while(match(tok::TokType::Logical_AND)) {
         std::unique_ptr<AST::Expr> rhs = equality();
-        expr = std::make_unique<AST::LogicalExpr>(AST::LogicOp::OP_AND, std::move(expr), std::move(rhs));
+        expr = std::make_unique<AST::LogicalExpr>(AST::LogicOp::OP_AND, std::move(expr), std::move(rhs), ty::Type::Ty_Bool);
       }
 
       return expr;
@@ -292,7 +322,7 @@ namespace iridium {
       while(match(tok::TokType::Equality) || match(tok::TokType::NotEquality)) {
         tok::TokType op = previous().getTokType();
         std::unique_ptr<AST::Expr> rhs = comparison();
-        expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs));
+        expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs), ty::Type::Ty_Bool);
       }
 
       return expr;
@@ -309,14 +339,19 @@ namespace iridium {
           ) {
         tok::TokType op = previous().getTokType();
         std::unique_ptr<AST::Expr> rhs = term();
-        expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs));
+        if(expr->retType == rhs->retType) {
+          expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs), expr->retType);
+        } else {
+          std::cerr << "Mismatched types in binary expression" << std::endl;
+          return std::make_unique<AST::ErrExpr>("Mismatched types in binary expression");
+        }
       }
 
       return expr;
     }
 
     std::unique_ptr<AST::Expr> Parser::paren() {
-      std::cerr << "Parsed a paren grouping" << std::endl;
+      //std::cerr << "Parsed a paren grouping" << std::endl;
 
       std::unique_ptr<AST::Expr> V = expression();
       if (!V) {
@@ -354,20 +389,30 @@ namespace iridium {
       while(match(tok::TokType::Minus) || match(tok::TokType::Plus)) {
         std::cerr << "Parsed a term" << std::endl;
         tok::TokType op = previous().getTokType();
-        std::unique_ptr<AST::Expr> right = factor();
-        return std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(right));
+        std::unique_ptr<AST::Expr> rhs = factor();
+        if(expr->retType == rhs->retType) {
+          expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs), expr->retType);
+        } else {
+          std::cerr << "Mismatched types in binary expression" << std::endl;
+          return std::make_unique<AST::ErrExpr>("Mismatched types in binary expression");
+        }
       }
-
       return expr;
     }
+
     std::unique_ptr<AST::Expr> Parser::factor() {
       std::unique_ptr<AST::Expr> expr = unary();
 
       while(match(tok::TokType::Slash) || match(tok::TokType::Asterisk)) {
         std::cerr << "Parsed a factor" << std::endl;
         tok::TokType op = previous().getTokType();
-        std::unique_ptr<AST::Expr> right = unary();
-        return std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(right));
+        std::unique_ptr<AST::Expr> rhs = unary();
+        if(expr->retType == rhs->retType) {
+          expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs), expr->retType);
+        } else {
+          std::cerr << "Mismatched types in binary expression" << std::endl;
+          return std::make_unique<AST::ErrExpr>("Mismatched types in binary expression");
+        }
       }
 
       return expr;
@@ -376,9 +421,16 @@ namespace iridium {
     std::unique_ptr<AST::Expr> Parser::unary() {
       // unary expr when ready :)
       if (match(tok::TokType::Minus) || match(tok::TokType::Exclaim)) {
+        std::cerr << "Parsed a Unary expr" << std::endl;
         tok::TokType op = previous().getTokType();
         std::unique_ptr<AST::Expr> expr = unary();
-        return std::make_unique<AST::UnaryExpr>(op, std::move(expr));
+        ty::Type type;
+        if(op == tok::TokType::Exclaim) {
+          type = ty::Type::Ty_Bool;
+        } else { // if not boolean NOT, use the existing type
+          type = expr->retType;
+        }
+        return std::make_unique<AST::UnaryExpr>(op, std::move(expr), type);
       }
 
       return primary();
@@ -389,29 +441,34 @@ namespace iridium {
       switch(primary.getTokType()) {
         case tok::TokType::i64:
           std::cerr << "Parsed an integer" << std::endl;
-          return std::make_unique<AST::IntExpr>(primary.geti64());
+          return std::make_unique<AST::IntExpr>(primary.geti64(), ty::Type::Ty_i64);
         case tok::TokType::f64:
-          std::cerr << "Parsed a float" << std::endl;
-          return std::make_unique<AST::FloatExpr>(primary.getf64());        
+          //std::cerr << "Parsed a float" << std::endl;
+          return std::make_unique<AST::FloatExpr>(primary.getf64(), ty::Type::Ty_f64);        
         case tok::TokType::Identifier:
           return identifier();
         case tok::TokType::OpenParen:
           return paren();
         default:
-          return std::make_unique<AST::ErrExpr>("Expected an expression");
+          return std::make_unique<AST::ErrExpr>("Parser expected an expression");
       }
     }
 
 
     std::unique_ptr<AST::Expr> Parser::identifier() {
-      std::cerr << "Parsed an identifier" << std::endl;
-      // consume the identifier
-      std::string name = advance().getString();
+      //std::cerr << "Parsed an identifier" << std::endl;
+      std::string name = previous().getString();
 
       // If no bracket, its a var ref
-      if (peek().getTokType() != tok::TokType::OpenParen) 
-        return std::make_unique<AST::VarExpr>(previous().getString());
+      if (peek().getTokType() != tok::TokType::OpenParen) {
 
+        auto result = m_CurUnit.m_Vars.find(name);
+        if(result == m_CurUnit.m_Vars.end()) {
+          std::cerr << "Use of an undefined variable '" << name << "'" << std::endl;
+          return std::make_unique<AST::ErrExpr>("Undefined variable" + name);
+        }
+        return std::make_unique<AST::VarExpr>(name, result->second->type);
+      }
       // otherwise, Function Call
       // consume the '('
       advance();
@@ -437,7 +494,17 @@ namespace iridium {
       // consume closing ')'
       advance();
 
-      return std::make_unique<AST::CallExpr>(name, std::move(args));
+      auto result = m_CurUnit.m_Functions.find(name);
+      if (result == m_CurUnit.m_Functions.end()) {
+        std::cerr << "Cannot call functions that do not exist!" << std::endl;
+        return std::make_unique<AST::ErrExpr>("Function doesnt exist");
+      }
+      AST::FnStmt* function = result->second;
+      if(args.size() != function->params.size()) {
+        std::cerr << "Incorrect amount of parameters passed to function of name '" << function->name << "'" << std::endl;
+        return std::make_unique<AST::ErrExpr>("Incorrect param count");
+      }
+      return std::make_unique<AST::CallExpr>(name, std::move(args), m_CurUnit.m_Functions[name]->retType);
     }
 
     std::vector<std::unique_ptr<AST::Stmt>> Parser::blockExpr() {

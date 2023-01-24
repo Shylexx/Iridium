@@ -92,6 +92,10 @@ namespace iridium {
     std::unique_ptr<AST::Stmt> ifStatement();
     std::vector<std::unique_ptr<AST::Stmt>> blockExpr();
 
+
+    // Types
+    // std::unique_ptr<AST::Type> parseTypeName();
+
   };
 } // namespace iridium
 #endif

@@ -10,6 +10,7 @@ namespace iridium {
 		std::cerr << source << std::endl;
 		
 		if(m_Parser.ParseFile(source)) {
+			m_Parser.printLexedToks();
 			std::cerr << "Generating Code..." << std::endl;
 			m_Codegen.GenUnit(m_Parser.m_CurUnit);
 			m_Codegen.PrintIR();

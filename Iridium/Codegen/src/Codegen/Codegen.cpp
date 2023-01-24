@@ -11,6 +11,7 @@ namespace iridium {
   }
 
   void Codegen::GenUnit(AST::Unit& unit) {
+    std::cerr << "Items in AST: " << unit.m_Items.size() << std::endl;
     for(auto& decl : unit.m_Items) {
       decl->Accept(this);
     }

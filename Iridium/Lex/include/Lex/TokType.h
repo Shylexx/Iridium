@@ -32,13 +32,18 @@ namespace iridium {
 
       // Literal Keywords
       i64KW,
+      i32KW,
       f64KW,
+      f32KW,
       StringKW,
+      BoolKW,
     
       // Literals
       Bool,
       i64,
+      i32,
       f64,
+      f32,
       String,
 
       // Logical Operators
