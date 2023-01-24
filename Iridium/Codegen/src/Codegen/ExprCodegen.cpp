@@ -12,9 +12,18 @@ llvm::Value *Codegen::VisitIntExpr(const AST::IntExpr *expr) {
                                       expr->Val);
 }
 
+llvm::Value *Codegen::VisitFloatExpr(const AST::FloatExpr *expr) {
+  return llvm::ConstantInt::getSigned((llvm::Type::getFloatTy(*m_Context)),
+                                      expr->Val);
+}
+
 llvm::Value *Codegen::VisitBoolExpr(const AST::BoolExpr *expr) {
   return llvm::ConstantInt::getSigned((llvm::Type::getInt1Ty(*m_Context)),
                                       expr->Val);
+}
+
+llvm::Value* Codegen::VisitUnaryExpr(const AST::UnaryExpr *expr) {
+  return nullptr;
 }
 
 llvm::Value *Codegen::VisitBinaryExpr(const AST::BinaryExpr *expr) {
@@ -36,11 +45,19 @@ llvm::Value *Codegen::VisitBinaryExpr(const AST::BinaryExpr *expr) {
   }
 }
 
+llvm::Value* Codegen::VisitLogicalExpr(const AST::LogicalExpr *expr) {
+  return nullptr;
+}
+
 llvm::Value* Codegen::VisitErrExpr(const AST::ErrExpr *expr) {
   return nullptr;
 }
 
 llvm::Value* Codegen::VisitVarExpr(const AST::VarExpr *expr) {
+  return nullptr;
+}
+
+llvm::Value* Codegen::VisitAssignExpr(const AST::AssignExpr *expr) {
   return nullptr;
 }
 

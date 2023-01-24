@@ -22,6 +22,20 @@ public:
   virtual llvm::Value* Accept(ASTVisitor* visitor) const = 0;
 };
 
+class UnaryExpr : public Expr {
+public:
+  ~UnaryExpr() override {}
+  UnaryExpr(tok::TokType oper, std::unique_ptr<Expr> RHS)
+    : Op(oper), RHS(std::move(RHS)) {}
+
+  llvm::Value* Accept(ASTVisitor* visitor) const override {
+    return visitor->VisitUnaryExpr(this);
+  }
+
+  tok::TokType Op;
+  std::unique_ptr<Expr> RHS;
+};
+
 class BinaryExpr : public Expr {
 public:
   ~BinaryExpr() override {}

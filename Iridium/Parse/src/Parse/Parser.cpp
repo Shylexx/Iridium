@@ -18,16 +18,18 @@ namespace iridium {
 
     void Parser::ParseTokenSet(const std::vector<tok::Token>& tokens) {}
 
-    void Parser::ParseFile(const std::string& source) {
+    bool Parser::ParseFile(const std::string& source) {
       m_Lexer->LexString(source);
 
       while (!atEnd()) {
         m_CurUnit.add(declaration());
         if (m_CurUnit.error()) {
           m_CurUnit.errMessage();
-          break;
+          return false;
         }
       }
+
+      return true;
     }
 
 
@@ -245,7 +247,7 @@ namespace iridium {
     std::unique_ptr<AST::Expr> Parser::assignment() {
       std::unique_ptr<AST::Expr> expr = orExpr();
 
-      if(peek().getTokType() == tok::TokType::Equal) {
+      if(peek().getTokType() == tok::TokType::Assignment) {
         //consume the '='
         advance();
 
@@ -287,7 +289,11 @@ namespace iridium {
     std::unique_ptr<AST::Expr> Parser::equality() {
       std::unique_ptr<AST::Expr> expr = comparison();
 
-
+      while(match(tok::TokType::Equality) || match(tok::TokType::NotEquality)) {
+        tok::TokType op = previous().getTokType();
+        std::unique_ptr<AST::Expr> rhs = comparison();
+        expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs));
+      }
 
       return expr;
     }
@@ -295,22 +301,37 @@ namespace iridium {
     std::unique_ptr<AST::Expr> Parser::comparison() {
       std::unique_ptr<AST::Expr> expr = term();
 
+      while(
+          match(tok::TokType::GreaterThan)
+          || match(tok::TokType::GreaterOrEqual)
+          || match(tok::TokType::LessThan)
+          || match(tok::TokType::LessOrEqual)
+          ) {
+        tok::TokType op = previous().getTokType();
+        std::unique_ptr<AST::Expr> rhs = term();
+        expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs));
+      }
+
       return expr;
     }
 
     std::unique_ptr<AST::Expr> Parser::paren() {
-      // consume the open paren
-      advance();
+      std::cerr << "Parsed a paren grouping" << std::endl;
 
-      auto V = expression();
-      if (!V)
+      std::unique_ptr<AST::Expr> V = expression();
+      if (!V) {
+        std::cerr << "Couldn't parse paren subexpr" << std::endl;
         return nullptr;
+      }
 
-      if (peek().getTokType() != tok::TokType::CloseParen)
+      if (peek().getTokType() != tok::TokType::CloseParen) {
+        std::cerr << "Couldn't find ending paren" << std::endl;
         return std::make_unique<AST::ErrExpr>("Missing Close Parenthesis after Expression!");
+      }
 
       // consume close bracket 
       advance();
+
       return V;
     }
 
@@ -331,6 +352,7 @@ namespace iridium {
       std::unique_ptr<AST::Expr> expr = factor();
 
       while(match(tok::TokType::Minus) || match(tok::TokType::Plus)) {
+        std::cerr << "Parsed a term" << std::endl;
         tok::TokType op = previous().getTokType();
         std::unique_ptr<AST::Expr> right = factor();
         return std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(right));
@@ -342,6 +364,7 @@ namespace iridium {
       std::unique_ptr<AST::Expr> expr = unary();
 
       while(match(tok::TokType::Slash) || match(tok::TokType::Asterisk)) {
+        std::cerr << "Parsed a factor" << std::endl;
         tok::TokType op = previous().getTokType();
         std::unique_ptr<AST::Expr> right = unary();
         return std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(right));
@@ -352,12 +375,11 @@ namespace iridium {
 
     std::unique_ptr<AST::Expr> Parser::unary() {
       // unary expr when ready :)
-      /*if (match(tok::TokType::Minus)) {
+      if (match(tok::TokType::Minus) || match(tok::TokType::Exclaim)) {
         tok::TokType op = previous().getTokType();
         std::unique_ptr<AST::Expr> expr = unary();
         return std::make_unique<AST::UnaryExpr>(op, std::move(expr));
       }
-      */
 
       return primary();
     }
@@ -366,8 +388,10 @@ namespace iridium {
       tok::Token primary = advance();
       switch(primary.getTokType()) {
         case tok::TokType::i64:
+          std::cerr << "Parsed an integer" << std::endl;
           return std::make_unique<AST::IntExpr>(primary.geti64());
         case tok::TokType::f64:
+          std::cerr << "Parsed a float" << std::endl;
           return std::make_unique<AST::FloatExpr>(primary.getf64());        
         case tok::TokType::Identifier:
           return identifier();
@@ -380,6 +404,7 @@ namespace iridium {
 
 
     std::unique_ptr<AST::Expr> Parser::identifier() {
+      std::cerr << "Parsed an identifier" << std::endl;
       // consume the identifier
       std::string name = advance().getString();
 

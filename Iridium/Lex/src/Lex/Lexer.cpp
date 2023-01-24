@@ -73,9 +73,9 @@ namespace iridium {
       case '-':
         return match('>') ? addToken(tok::Token(1, tok::TokType::Arrow)) : addToken(tok::Token(1, tok::TokType::Minus));
       case '!':
-        return match('=') ? addToken(tok::Token(1, tok::TokType::NotEqual)) : addToken(tok::Token(1, tok::TokType::Exclaim));
+        return match('=') ? addToken(tok::Token(1, tok::TokType::NotEquality)) : addToken(tok::Token(1, tok::TokType::Exclaim));
       case '=':
-        return match('=') ? addToken(tok::Token(1, tok::TokType::Equal)) : addToken(tok::Token(1, tok::TokType::Assignment));
+        return match('=') ? addToken(tok::Token(1, tok::TokType::Equality)) : addToken(tok::Token(1, tok::TokType::Assignment));
       case '<':
         return match('=') ? addToken(tok::Token(1, tok::TokType::LessOrEqual)) : addToken(tok::Token(1, tok::TokType::LessThan));
       case '>':
@@ -486,11 +486,11 @@ namespace iridium {
       case tok::TokType::Assignment:
         type = "TOK::ASSIGN";
         break;
-      case tok::TokType::Equal:
-        type = "TOK::EQUALTO";
+      case tok::TokType::Equality:
+        type = "TOK::EQUALITY";
         break;
-      case tok::TokType::NotEqual:
-        type = "TOK::NOTEQUALTO";
+      case tok::TokType::NotEquality:
+        type = "TOK::NOTEQUALITY";
         break;
       case tok::TokType::GreaterThan:
         type = "TOK::GREATERTHAN";

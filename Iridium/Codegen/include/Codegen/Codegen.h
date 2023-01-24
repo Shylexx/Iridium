@@ -40,6 +40,7 @@ public:
   llvm::Value *VisitErrExpr(const AST::ErrExpr *expr) override;
   llvm::Value *VisitAssignExpr(const AST::AssignExpr *expr) override;
   llvm::Value* VisitLogicalExpr(const AST::LogicalExpr *expr) override;
+  llvm::Value* VisitUnaryExpr(const AST::UnaryExpr *expr) override;
 
 private:
   llvm::Type* from_Ty(ty::Type type);

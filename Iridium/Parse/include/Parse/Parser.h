@@ -17,7 +17,9 @@ namespace iridium {
     Parser();
     ~Parser();
 
-    void ParseFile(const std::string& fileSource);
+    // Parses the file into an AST.
+    // Returns true on success, false on fail
+    bool ParseFile(const std::string& fileSource);
     void ParseTokenSet(const std::vector<tok::Token>& tokens);
 
     void printSyntaxErrs();
@@ -69,8 +71,8 @@ namespace iridium {
 
     std::unique_ptr<AST::Expr> expression();
     std::unique_ptr<AST::Expr> paren();
-    std::unique_ptr<AST::Expr> comparison(); //TODO
-    std::unique_ptr<AST::Expr> equality(); //TODO
+    std::unique_ptr<AST::Expr> comparison(); 
+    std::unique_ptr<AST::Expr> equality(); 
     std::unique_ptr<AST::Expr> assignment();
     std::unique_ptr<AST::Expr> orExpr();
     std::unique_ptr<AST::Expr> andExpr();

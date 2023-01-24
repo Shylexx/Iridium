@@ -64,8 +64,8 @@ namespace iridium {
       // Unary Boolean
       Exclaim,
       // Binary Bool Op
-      Equal,
-      NotEqual,
+      Equality,
+      NotEquality,
       LessThan,
       GreaterThan,
       LessOrEqual,
