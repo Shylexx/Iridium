@@ -30,6 +30,7 @@ public:
 
   // expressions
   llvm::Value *VisitIntExpr(const AST::IntExpr *expr) override;
+  llvm::Value *VisitFloatExpr(const AST::FloatExpr *expr) override;
   llvm::Value* VisitBinaryExpr(const AST::BinaryExpr* expr) override;
   llvm::Value *VisitBoolExpr(const AST::BoolExpr *expr) override;
   llvm::Value *VisitBlockExpr(const AST::BlockExpr *expr) override; // TODO
@@ -37,6 +38,8 @@ public:
   llvm::Value *VisitReturnExpr(const AST::ReturnExpr *expr) override;
   llvm::Value *VisitVarExpr(const AST::VarExpr *expr) override;
   llvm::Value *VisitErrExpr(const AST::ErrExpr *expr) override;
+  llvm::Value *VisitAssignExpr(const AST::AssignExpr *expr) override;
+  llvm::Value* VisitLogicalExpr(const AST::LogicalExpr *expr) override;
 
 private:
   llvm::Type* from_Ty(ty::Type type);

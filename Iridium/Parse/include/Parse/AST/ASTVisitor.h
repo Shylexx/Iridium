@@ -11,6 +11,7 @@ namespace AST {
   class Err;
 
   class IntExpr;
+  class FloatExpr;
   class BoolExpr;
   class BinaryExpr;
   class BlockExpr;
@@ -18,6 +19,8 @@ namespace AST {
   class ReturnExpr;
   class ErrExpr;
   class VarExpr;
+  class AssignExpr;
+  class LogicalExpr;
 }
 
 
@@ -33,6 +36,7 @@ namespace AST {
 
     //expressions
     virtual llvm::Value* VisitIntExpr(const AST::IntExpr* expr) = 0;
+    virtual llvm::Value* VisitFloatExpr(const AST::FloatExpr* expr) = 0;
     virtual llvm::Value* VisitBoolExpr(const AST::BoolExpr* expr) = 0;
     virtual llvm::Value* VisitBinaryExpr(const AST::BinaryExpr* expr) = 0;
     virtual llvm::Value* VisitBlockExpr(const AST::BlockExpr* expr) = 0;
@@ -40,6 +44,9 @@ namespace AST {
     virtual llvm::Value* VisitReturnExpr(const AST::ReturnExpr* expr) = 0;
     virtual llvm::Value* VisitVarExpr(const AST::VarExpr* expr) = 0;
     virtual llvm::Value* VisitErrExpr(const AST::ErrExpr* expr) = 0;
+    virtual llvm::Value* VisitAssignExpr(const AST::AssignExpr* expr) = 0;
+    virtual llvm::Value* VisitLogicalExpr(const AST::LogicalExpr* expr) = 0;
+
 
     
   };

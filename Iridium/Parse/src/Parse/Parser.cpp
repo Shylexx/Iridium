@@ -75,6 +75,7 @@ namespace iridium {
       return exprStatement();
     }
 
+    // Returns whether or not the next token is of the select type
     bool Parser::check(tok::TokType type) {
       if (atEnd()) {
         return false;
@@ -82,6 +83,7 @@ namespace iridium {
       return peek().getTokType() == type;
     }
 
+    // Consumes the type if the next matches, otherwise returns false
     bool Parser::match(tok::TokType type) {
       if (!check(type)) {
         return false;
@@ -237,7 +239,63 @@ namespace iridium {
     }
 
     std::unique_ptr<AST::Expr> Parser::expression() {
-      return ternary();
+      return assignment();
+    }
+
+    std::unique_ptr<AST::Expr> Parser::assignment() {
+      std::unique_ptr<AST::Expr> expr = orExpr();
+
+      if(peek().getTokType() == tok::TokType::Equal) {
+        //consume the '='
+        advance();
+
+        // find the value to be assigned to
+        std::unique_ptr<AST::Expr> value = assignment();
+
+        if(m_Lexer->get(m_CurTok - 2).getTokType() == tok::TokType::Identifier) {
+          std::string target = static_cast<AST::VarExpr*>(expr.get())->Iden;
+          return std::make_unique<AST::AssignExpr>(target, std::move(value));
+        } else {
+          return std::make_unique<AST::ErrExpr>("Cannot assign a value to that target");
+        }
+      }
+      return expr;
+    }
+
+    std::unique_ptr<AST::Expr> Parser::orExpr() {
+      std::unique_ptr<AST::Expr> expr = andExpr();
+
+      while(match(tok::TokType::Logical_OR)) {
+        std::unique_ptr<AST::Expr> rhs = andExpr();
+        expr = std::make_unique<AST::LogicalExpr>(AST::LogicOp::OP_OR, std::move(expr), std::move(rhs));
+      }
+
+      return expr;
+    }
+
+    std::unique_ptr<AST::Expr> Parser::andExpr() {
+      std::unique_ptr<AST::Expr> expr = equality();
+
+      while(match(tok::TokType::Logical_AND)) {
+        std::unique_ptr<AST::Expr> rhs = equality();
+        expr = std::make_unique<AST::LogicalExpr>(AST::LogicOp::OP_AND, std::move(expr), std::move(rhs));
+      }
+
+      return expr;
+    }
+
+    std::unique_ptr<AST::Expr> Parser::equality() {
+      std::unique_ptr<AST::Expr> expr = comparison();
+
+
+
+      return expr;
+    }
+
+    std::unique_ptr<AST::Expr> Parser::comparison() {
+      std::unique_ptr<AST::Expr> expr = term();
+
+      return expr;
     }
 
     std::unique_ptr<AST::Expr> Parser::paren() {
@@ -249,7 +307,7 @@ namespace iridium {
         return nullptr;
 
       if (peek().getTokType() != tok::TokType::CloseParen)
-        return std::make_unique<AST::ErrExpr>();
+        return std::make_unique<AST::ErrExpr>("Missing Close Parenthesis after Expression!");
 
       // consume close bracket 
       advance();
@@ -304,6 +362,23 @@ namespace iridium {
       return primary();
     }
 
+    std::unique_ptr<AST::Expr> Parser::primary() {
+      tok::Token primary = advance();
+      switch(primary.getTokType()) {
+        case tok::TokType::i64:
+          return std::make_unique<AST::IntExpr>(primary.geti64());
+        case tok::TokType::f64:
+          return std::make_unique<AST::FloatExpr>(primary.getf64());        
+        case tok::TokType::Identifier:
+          return identifier();
+        case tok::TokType::OpenParen:
+          return paren();
+        default:
+          return std::make_unique<AST::ErrExpr>("Expected an expression");
+      }
+    }
+
+
     std::unique_ptr<AST::Expr> Parser::identifier() {
       // consume the identifier
       std::string name = advance().getString();
@@ -338,21 +413,6 @@ namespace iridium {
       advance();
 
       return std::make_unique<AST::CallExpr>(name, std::move(args));
-    }
-
-    std::unique_ptr<AST::Expr> Parser::primary() {
-      switch(peek().getTokType()) {
-        case tok::TokType::i64:
-          return std::make_unique<AST::IntExpr>(previous().geti64());
-        case tok::TokType::f64:
-          return std::make_unique<AST::IntExpr>(previous().getf64());        
-        case tok::TokType::Identifier:
-          return identifier();
-        case tok::TokType::OpenParen:
-          return paren();
-        default:
-          return std::make_unique<AST::ErrExpr>();
-      }
     }
 
     std::vector<std::unique_ptr<AST::Stmt>> Parser::blockExpr() {

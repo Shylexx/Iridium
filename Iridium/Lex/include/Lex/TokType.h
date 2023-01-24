@@ -40,6 +40,10 @@ namespace iridium {
       i64,
       f64,
       String,
+
+      // Logical Operators
+      Logical_OR,
+      Logical_AND,
       
       // Punctuators
       Colon,

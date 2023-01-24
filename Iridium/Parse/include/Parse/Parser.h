@@ -69,11 +69,17 @@ namespace iridium {
 
     std::unique_ptr<AST::Expr> expression();
     std::unique_ptr<AST::Expr> paren();
-    std::unique_ptr<AST::Expr> ternary();
+    std::unique_ptr<AST::Expr> comparison(); //TODO
+    std::unique_ptr<AST::Expr> equality(); //TODO
+    std::unique_ptr<AST::Expr> assignment();
+    std::unique_ptr<AST::Expr> orExpr();
+    std::unique_ptr<AST::Expr> andExpr();
+    std::unique_ptr<AST::Expr> ternary(); // TODO?
     std::unique_ptr<AST::Expr> term();
     std::unique_ptr<AST::Expr> factor();
-    std::unique_ptr<AST::Expr> unary();
+    std::unique_ptr<AST::Expr> unary(); // TODO
     std::unique_ptr<AST::Expr> primary();
+    // parses function calls and variable names
     std::unique_ptr<AST::Expr> identifier();
 
 

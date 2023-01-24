@@ -46,6 +46,17 @@ public:
   int Val;
 };
 
+class FloatExpr : public Expr {
+public:
+  FloatExpr(float value) : Val(value) {}
+
+  llvm::Value* Accept(ASTVisitor* visitor) const override {
+    return visitor->VisitFloatExpr(this);
+  }
+
+  float Val;
+};
+
 class BoolExpr : public Expr {
 public:
   BoolExpr(bool value) : Val(value) {}
@@ -110,15 +121,58 @@ public:
 
 };
 
+class AssignExpr : public Expr {
+public:
+  ~AssignExpr() override {}
+
+  AssignExpr(const std::string& name,
+      std::unique_ptr<AST::Expr> value)
+    : Name(name), Val(std::move(value)) {}
+
+  std::string Name = "";
+  std::unique_ptr<AST::Expr> Val;
+
+  llvm::Value* Accept(ASTVisitor* visitor) const override {
+    return visitor->VisitAssignExpr(this);
+  }
+};
+
+enum class LogicOp {
+  OP_AND,
+  OP_OR,
+  OP_NOT,
+};
+
+class LogicalExpr : public Expr {
+public:
+  ~LogicalExpr() override {}
+
+  LogicalExpr(AST::LogicOp op, std::unique_ptr<AST::Expr> left,
+      std::unique_ptr<AST::Expr> right)
+      : Op(op), LHS(std::move(left)), RHS(std::move(right)) {}
+
+  AST::LogicOp Op;
+  std::unique_ptr<AST::Expr> LHS;
+  std::unique_ptr<AST::Expr> RHS;
+
+  llvm::Value* Accept(ASTVisitor* visitor) const override {
+    return visitor->VisitLogicalExpr(this);
+  }
+};
+
 class ErrExpr : public Expr {
 public:
   ~ErrExpr() override {}
 
   ErrExpr() = default;
+  ErrExpr(const std::string& errMsg) 
+    : Msg(errMsg) {}
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitErrExpr(this);
   }
+private:
+  std::string Msg = "";
 
 };
 
