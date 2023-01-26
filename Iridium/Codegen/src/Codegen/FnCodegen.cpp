@@ -1,4 +1,5 @@
 #include "Codegen/Codegen.h"
+#include "Parse/AST/Stmt.h"
 #include "Parse/Type/Type.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Function.h"
@@ -8,22 +9,27 @@
 #include <iostream>
 
 namespace iridium {
+    void Codegen::VisitProtoStmt(const AST::ProtoStmt *stmt) {
+	std::cerr << "This should never get visited!" << std::endl;
+    }
+
     void Codegen::VisitFnStmt(const AST::FnStmt* stmt) {
 	// Function Prototype 
+	AST::ProtoStmt* prototype = static_cast<AST::ProtoStmt*>(stmt->Proto.get());
 
 	std::vector<llvm::Type*> types;
-	for(int i = 0; i < stmt->params.size(); i++) {
-	    types.push_back(from_Ty(stmt->params[i].second));
+	for(int i = 0; i < prototype->params.size(); i++) {
+	    types.push_back(from_Ty(prototype->params[i].second));
 	}
 
-	llvm::FunctionType* FType = llvm::FunctionType::get(from_Ty(stmt->retType), types, false);
+	llvm::FunctionType* FType = llvm::FunctionType::get(from_Ty(prototype->retType), types, false);
 
-	llvm::Function* func = llvm::Function::Create(FType, llvm::Function::ExternalLinkage, stmt->name, *m_Module);
+	llvm::Function* func = llvm::Function::Create(FType, llvm::Function::ExternalLinkage, prototype->name, *m_Module);
 
 	// make names for args
 	unsigned Idx = 0;
 	for (auto& Arg: func->args())
-	    Arg.setName(stmt->params[Idx++].first.getString());
+	    Arg.setName(prototype->params[Idx++].first.getString());
 
 	// Function Definition
 

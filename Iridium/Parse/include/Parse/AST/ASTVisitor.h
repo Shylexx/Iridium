@@ -5,8 +5,10 @@
 namespace iridium {
 namespace AST {
   class ExprStmt;
+  class ProtoStmt;
   class FnStmt;
   class VarDeclStmt;
+  class GlobVarDeclStmt;
   class IfStmt;
   class Err;
 
@@ -29,8 +31,10 @@ namespace AST {
   public:
     // statements
     virtual void VisitExprStmt(const AST::ExprStmt* stmt) = 0;
+    virtual void VisitProtoStmt(const AST::ProtoStmt* stmt) = 0;
     virtual void VisitFnStmt(const AST::FnStmt* stmt) = 0;
     virtual void VisitVarDeclStmt(const AST::VarDeclStmt* stmt) = 0;
+    virtual void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt* stmt) = 0;
     virtual void VisitIfStmt(const AST::IfStmt* stmt) = 0;
     virtual void VisitErrStmt(const AST::Err* stmt) = 0;
 

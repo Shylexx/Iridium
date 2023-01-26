@@ -7,6 +7,9 @@ namespace iridium {
     stmt->Expression->Accept(this);
   }
 
+  void Codegen::VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt) {
+  }
+
   void Codegen::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
   }
 

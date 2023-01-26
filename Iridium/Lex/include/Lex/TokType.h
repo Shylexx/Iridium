@@ -2,6 +2,7 @@
 #define __IRIDIUM_TOKTYPE_H__
 
 #include <cstdint>
+#include <string>
 
 namespace iridium {
   namespace tok {
@@ -22,6 +23,7 @@ namespace iridium {
       For,
       While,
       Fn,
+      Global,
       Extern,
       Return,
       // Reserved For later use

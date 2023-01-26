@@ -25,8 +25,10 @@ public:
   void PrintIR();
   // statements
   void VisitExprStmt(const AST::ExprStmt *stmt) override; // TODO
+  void VisitProtoStmt(const AST::ProtoStmt *stmt) override; // TODO
   void VisitFnStmt(const AST::FnStmt *stmt) override; // TODO
   void VisitVarDeclStmt(const AST::VarDeclStmt *stmt) override; // TODO
+  void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt) override; // TODO
   void VisitIfStmt(const AST::IfStmt *stmt) override; // TODO
   void VisitErrStmt(const AST::Err* stmt) override; // TODO
 

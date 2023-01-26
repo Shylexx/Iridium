@@ -4,6 +4,7 @@
 #include "Lex/TokType.h"
 #include "Parse/Type/Type.h"
 #include "Parse/AST/ASTVisitor.h"
+#include "Parse/AST/NodeType.h"
 #include <llvm/IR/Value.h>
 #include <memory>
 #include <string>
@@ -14,6 +15,7 @@ namespace AST {
 
 class Stmt;
 
+
 class Expr {
 protected:
   Expr(ty::Type type)
@@ -23,6 +25,8 @@ public:
   virtual ~Expr() = default;
   // All expressions return something, if not specified, its void.
   ty::Type retType;
+  NodeType nodeType = NodeType::Expr;
+
   virtual llvm::Value* Accept(ASTVisitor* visitor) const = 0;
 };
 
@@ -182,14 +186,17 @@ class ErrExpr : public Expr {
 public:
   ~ErrExpr() override {}
 
-  ErrExpr(const std::string& errMsg, ty::Type type = ty::Type::Ty_Err) 
-    : Msg(errMsg), Expr(type) {}
+  ErrExpr(const std::string& errMsg, int sourceLine = 0) 
+    : Msg(errMsg), Expr(ty::Type::Ty_Err), Line(sourceLine) {}
 
   const std::string& message() const { return Msg; }
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitErrExpr(this);
   }
+
+  NodeType nodeType = NodeType::ErrorNode;
+  int Line;
 private:
   std::string Msg = "";
 

@@ -4,6 +4,7 @@
 #include "Lex/Token.h"
 #include "Parse/AST/ASTVisitor.h"
 #include "Parse/AST/Expr.h"
+#include "Parse/AST/NodeType.h"
 #include "Parse/Type/Type.h"
 #include <memory>
 #include <string>
@@ -12,21 +13,14 @@
 namespace iridium {
 namespace AST {
 
-enum class NodeType {
-  None,
-  ExprStmtNode,
-  ErrorNode,
-  FnDeclNode,
-  VarDeclNode,
-  IfStmtNode,
-  BinExprNode,
-};
 
 class Stmt {
 public:
   virtual ~Stmt() {}
-  NodeType nodeType = NodeType::None;
   virtual void Accept(ASTVisitor* visitor) const = 0;
+  NodeType node() { return nodeType; }
+private:
+  NodeType nodeType = NodeType::None;
 };
 
 class Err : public Stmt {
@@ -37,34 +31,46 @@ public:
   void Accept(ASTVisitor* visitor) const override {
 	  visitor->VisitErrStmt(this);
   }
-  NodeType nodeType = NodeType::ErrorNode;
   std::string m_Message;
   int m_SourceLine = 0;
+private:
+  NodeType nodeType = NodeType::ErrorNode;
+};
+
+class ProtoStmt : public Stmt {
+public:
+  ~ProtoStmt() override {}
+  ProtoStmt(const std::string& name,
+      std::vector<std::pair<tok::Token, ty::Type>> params,
+      ty::Type type = ty::Type::Ty_Void)
+    : name(name), params(std::move(params)), retType(type) {}
+
+  void Accept(ASTVisitor* visitor) const override {
+	  visitor->VisitProtoStmt(this);
+  }
+
+  std::string name;
+  std::vector<std::pair<tok::Token, ty::Type>> params;
+  ty::Type retType = ty::Type::Ty_Void;
+private:
+  NodeType nodeType = NodeType::FnProtoNode;
 };
 
 class FnStmt : public Stmt {
 public:
   ~FnStmt() override {}
-  FnStmt(const std::string &name,
-         std::vector<std::pair<tok::Token, ty::Type>> params,
+  FnStmt(std::unique_ptr<ProtoStmt> prototype,
          std::vector<std::unique_ptr<Stmt>> body)
-      : name(name), params(std::move(params)), body(std::move(body)) {}
-
-  FnStmt(const std::string &name,
-         std::vector<std::pair<tok::Token, ty::Type>> params,
-	 ty::Type type,
-         std::vector<std::unique_ptr<Stmt>> body)
-      : name(name), params(std::move(params)), retType(type), body(std::move(body)) {}
+      : Proto(std::move(prototype)), body(std::move(body)) {}
 
   void Accept(ASTVisitor* visitor) const override {
 	  visitor->VisitFnStmt(this);
   }
 
-  NodeType nodeType = NodeType::FnDeclNode;
-  std::string name;
-  std::vector<std::pair<tok::Token, ty::Type>> params;
-  ty::Type retType = ty::Type::Ty_Void;
+  std::unique_ptr<ProtoStmt> Proto;
   std::vector<std::unique_ptr<Stmt>> body;
+private:
+  NodeType nodeType = NodeType::FnDeclNode;
 };
 
 class VarDeclStmt : public Stmt {
@@ -76,10 +82,27 @@ public:
 	  visitor->VisitVarDeclStmt(this);
   }
 
-  NodeType nodeType = NodeType::VarDeclNode;
   ty::Type type;
   std::string m_Name;
   std::unique_ptr<AST::Expr> m_Initializer;
+private:
+  NodeType nodeType = NodeType::VarDeclNode;
+};
+
+class GlobVarDeclStmt : public Stmt {
+public:
+  ~GlobVarDeclStmt() override {}
+  GlobVarDeclStmt(const std::string &Name, ty::Type ty, std::unique_ptr<AST::Expr>&& initializer = {}) : m_Name(Name), m_Initializer(std::move(initializer)), type(ty) {}
+  
+  void Accept(ASTVisitor* visitor) const override {
+	  visitor->VisitGlobVarDeclStmt(this);
+  }
+
+  ty::Type type;
+  std::string m_Name;
+  std::unique_ptr<AST::Expr> m_Initializer;
+private:
+  NodeType nodeType = NodeType::GlobVarDeclNode;
 };
 
 class IfStmt : public Stmt {
@@ -90,6 +113,7 @@ public:
 	  visitor->VisitIfStmt(this);
   }
 
+private:
   NodeType nodeType = NodeType::IfStmtNode;
 };
 
@@ -97,7 +121,11 @@ class ExprStmt : public Stmt {
 public:
   ~ExprStmt() override {}
   ExprStmt(std::unique_ptr<AST::Expr> expr)
-    : Expression(std::move(expr)) {}
+    : Expression(std::move(expr)) {
+      if(Expression->nodeType == NodeType::ErrorNode) {
+	nodeType = NodeType::ErrorNode;
+      }
+    }
 
   std::unique_ptr<AST::Expr> Expression;
 
@@ -105,6 +133,7 @@ public:
 	  visitor->VisitExprStmt(this);
   }
 
+private:
   NodeType nodeType = NodeType::ExprStmtNode;
 };
 } // namespace AST

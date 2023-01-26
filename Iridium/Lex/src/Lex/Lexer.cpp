@@ -191,7 +191,7 @@ namespace iridium {
 
     // If no decimal point found, return integer
     numString = m_SourceCode.substr(m_TokenStartIndex, currentTokenLength());
-    return addToken(tok::Token(currentTokenLength(), tok::TokType::i64, (int64_t)std::stol(numString)));
+    return addToken(tok::Token(currentTokenLength(), tok::TokType::i32, (int64_t)std::stol(numString)));
   }
 
   tok::Token Lexer::lexIdentifier() {
@@ -369,6 +369,9 @@ namespace iridium {
       if (str == "extern") {
         return tok::TokType::Extern;
       }
+      if (str == "global") {
+        return tok::TokType::Global;
+      }
       else if (str == "return") {
         return tok::TokType::Return;
       }
@@ -420,6 +423,9 @@ namespace iridium {
         break;
       case tok::TokType::Extern:
         type = "TOK::EXTERN";
+        break;
+      case tok::TokType::Global:
+        type = "TOK::GLOBAL";
         break;
       case tok::TokType::Enum:
         type = "TOK::ENUM";

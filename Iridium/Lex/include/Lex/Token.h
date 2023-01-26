@@ -46,6 +46,7 @@ namespace iridium {
 
     };
 
+    std::string TokToString(tok::Token type);
   } // namespace tok
 } // namespace iridium
 #endif

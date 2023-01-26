@@ -6,6 +6,7 @@ add_library(IridiumParse STATIC
   src/Parse/Parser.cpp
   src/Parse/AST/ASTVisitor.cpp
   src/Parse/AST/Unit.cpp
+  src/Parse/AST/NodeType.cpp
   src/Parse/Type/Type.cpp
 )
 

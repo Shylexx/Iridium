@@ -3,8 +3,8 @@
 
 #include "Lex/Lexer.h"
 #include "Lex/TokType.h"
-#include "Parse/AST/Stmt.h"
 #include "Parse/AST/Expr.h"
+#include "Parse/AST/Stmt.h"
 #include "Lex/Token.h"
 #include "Parse/AST/Unit.h"
 #include <string>
@@ -20,6 +20,9 @@ namespace iridium {
     // Parses the file into an AST.
     // Returns true on success, false on fail
     bool ParseFile(const std::string& fileSource);
+
+    // Collect all function signatures into the Unit prior to parsing the content itself
+    bool ResolveItems();
     void ParseTokenSet(const std::vector<tok::Token>& tokens);
 
     void printSyntaxErrs();
@@ -40,6 +43,10 @@ namespace iridium {
 
     std::unique_ptr<Lexer> m_Lexer;
 
+    std::string m_CurFunction;
+
+    // return the current source code line from the lexer;
+    int currentLine();
     // Returns if we are at the end of the token set
     bool atEnd();
     // Returns the next token to be consumed
@@ -64,7 +71,8 @@ namespace iridium {
     std::unique_ptr<AST::Stmt> statement();
     std::unique_ptr<AST::Stmt> declaration();
     // Items
-    std::unique_ptr<AST::Stmt> fnDeclaration();
+    std::unique_ptr<AST::Stmt> fnProto();
+    std::unique_ptr<AST::Stmt> fnDefinition();
     std::unique_ptr<AST::Stmt> varDeclaration(tok::TokType type);
 
     std::unique_ptr<AST::Stmt> exprStatement();
