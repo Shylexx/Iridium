@@ -9,7 +9,6 @@ namespace AST {
   class FnStmt;
   class VarDeclStmt;
   class GlobVarDeclStmt;
-  class IfStmt;
   class Err;
 
   class IntExpr;
@@ -24,6 +23,7 @@ namespace AST {
   class VarExpr;
   class AssignExpr;
   class LogicalExpr;
+  class IfExpr;
 }
 
 
@@ -35,7 +35,6 @@ namespace AST {
     virtual void VisitFnStmt(const AST::FnStmt* stmt) = 0;
     virtual void VisitVarDeclStmt(const AST::VarDeclStmt* stmt) = 0;
     virtual void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt* stmt) = 0;
-    virtual void VisitIfStmt(const AST::IfStmt* stmt) = 0;
     virtual void VisitErrStmt(const AST::Err* stmt) = 0;
 
 
@@ -46,6 +45,7 @@ namespace AST {
     virtual llvm::Value* VisitBinaryExpr(const AST::BinaryExpr* expr) = 0;
     virtual llvm::Value* VisitBlockExpr(const AST::BlockExpr* expr) = 0;
     virtual llvm::Value* VisitCallExpr(const AST::CallExpr* expr) = 0;
+    virtual llvm::Value* VisitIfExpr(const AST::IfExpr* expr) = 0;
     virtual llvm::Value* VisitReturnExpr(const AST::ReturnExpr* expr) = 0;
     virtual llvm::Value* VisitVarExpr(const AST::VarExpr* expr) = 0;
     virtual llvm::Value* VisitErrExpr(const AST::ErrExpr* expr) = 0;

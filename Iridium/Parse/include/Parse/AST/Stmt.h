@@ -105,17 +105,6 @@ private:
   NodeType nodeType = NodeType::GlobVarDeclNode;
 };
 
-class IfStmt : public Stmt {
-public:
-  IfStmt() {}
-  ~IfStmt() override {}
-  void Accept(ASTVisitor* visitor) const override {
-	  visitor->VisitIfStmt(this);
-  }
-
-private:
-  NodeType nodeType = NodeType::IfStmtNode;
-};
 
 class ExprStmt : public Stmt {
 public:

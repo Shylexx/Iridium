@@ -1,13 +1,13 @@
 #include "Codegen/Codegen.h"
 #include "llvm/IR/LLVMContext.h"
+#include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/Scalar/GVN.h>
 #include "llvm/Support/raw_ostream.h"
 #include <iostream>
 
 namespace iridium {
   Codegen::Codegen() {
-    m_Context = std::make_unique<llvm::LLVMContext>();
-    m_Builder = std::unique_ptr<llvm::IRBuilder<>>(new llvm::IRBuilder<>(*m_Context));
-    m_Module = std::make_unique<llvm::Module>("Module", *m_Context);
   }
 
   void Codegen::GenUnit(AST::Unit& unit) {
@@ -15,6 +15,24 @@ namespace iridium {
     for(auto& decl : unit.m_Items) {
       decl->Accept(this);
     }
+  }
+
+  void Codegen::InitModuleAndFPM() {
+    m_Context = std::make_unique<llvm::LLVMContext>();
+    m_Module = std::make_unique<llvm::Module>("Module", *m_Context);
+
+    m_Builder = std::unique_ptr<llvm::IRBuilder<>>(new llvm::IRBuilder<>(*m_Context));
+
+    m_FPM = std::make_unique<llvm::legacy::FunctionPassManager>(m_Module.get());
+    
+    if(OPTIMIZE) {
+      m_FPM->add(llvm::createInstructionCombiningPass());
+      m_FPM->add(llvm::createReassociatePass());
+      m_FPM->add(llvm::createGVNPass());
+      m_FPM->add(llvm::createCFGSimplificationPass());
+    }
+    
+    m_FPM->doInitialization();
   }
 
   void Codegen::PrintIR() {

@@ -4,6 +4,7 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <memory>
 
 #include "Parse/AST/ASTVisitor.h"
@@ -21,7 +22,10 @@ class Codegen : public ASTVisitor {
 public:
   Codegen();
 
+  static const bool OPTIMIZE = false;
+
   void GenUnit(AST::Unit& unit);
+  void InitModuleAndFPM();
   void PrintIR();
   // statements
   void VisitExprStmt(const AST::ExprStmt *stmt) override; // TODO
@@ -29,7 +33,6 @@ public:
   void VisitFnStmt(const AST::FnStmt *stmt) override; // TODO
   void VisitVarDeclStmt(const AST::VarDeclStmt *stmt) override; // TODO
   void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt) override; // TODO
-  void VisitIfStmt(const AST::IfStmt *stmt) override; // TODO
   void VisitErrStmt(const AST::Err* stmt) override; // TODO
 
   // expressions
@@ -39,6 +42,7 @@ public:
   llvm::Value *VisitBoolExpr(const AST::BoolExpr *expr) override;
   llvm::Value *VisitBlockExpr(const AST::BlockExpr *expr) override; // TODO
   llvm::Value *VisitCallExpr(const AST::CallExpr *expr) override;
+  llvm::Value* VisitIfExpr(const AST::IfExpr *expr) override; // TODO
   llvm::Value *VisitReturnExpr(const AST::ReturnExpr *expr) override;
   llvm::Value *VisitVarExpr(const AST::VarExpr *expr) override;
   llvm::Value *VisitErrExpr(const AST::ErrExpr *expr) override;
@@ -56,6 +60,7 @@ private:
   std::unique_ptr<llvm::LLVMContext> m_Context;
   std::unique_ptr<llvm::IRBuilder<>> m_Builder;
   std::unique_ptr<llvm::Module> m_Module;
+  std::unique_ptr<llvm::legacy::FunctionPassManager> m_FPM;
   std::map<std::string, llvm::Value*> m_NamedValues;
 };
 } // namespace iridium

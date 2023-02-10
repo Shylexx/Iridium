@@ -18,10 +18,10 @@ namespace iridium {
     }
   }
 
-	std::string Driver::ReadFileToString(const std::string& path) {
-		std::ifstream t(path);
-		std::string content((std::istreambuf_iterator<char>(t)),
-				(std::istreambuf_iterator<char>()));
-		return content;
-	}
+  std::string Driver::ReadFileToString(const std::string& path) {
+    std::ifstream t(path);
+    std::string content((std::istreambuf_iterator<char>(t)),
+		    (std::istreambuf_iterator<char>()));
+    return content;
+  }
 }

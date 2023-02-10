@@ -2,6 +2,7 @@
 #include "Lex/TokType.h"
 #include "Parse/AST/Expr.h"
 #include "Parse/AST/Stmt.h"
+#include "Parse/Type/Type.h"
 #include "llvm/IR/Function.h"
 
 #include <iostream>
@@ -67,6 +68,20 @@ llvm::Value* Codegen::VisitVarExpr(const AST::VarExpr *expr) {
   if(!V)
     GenError("Unknown Variable Name");
   return V;
+}
+
+llvm::Value* Codegen::VisitIfExpr(const AST::IfExpr *expr) {
+  if (expr->Cond->retType != ty::Type::Ty_Bool)
+    return GenError("Condition passed to if statement does not resolve to true or false");
+
+  llvm::Value* CondV = expr->Cond->Accept(this);
+  if (!CondV)
+    return GenError("Invalid Condition passed to If Statement!");
+
+  llvm::Function* parent = m_Builder->GetInsertBlock()->getParent();
+  llvm::BasicBlock* ThenBlock = llvm::BasicBlock::Create(*m_Context, "then", parent);
+  llvm::BasicBlock* ElseBlock = llvm::BasicBlock::Create(*m_Context, "else");
+  llvm::BasicBlock* MergeBlock = llvm::BasicBlock::Create(*m_Context, "ifcont");
 }
 
 llvm::Value* Codegen::VisitAssignExpr(const AST::AssignExpr *expr) {

@@ -68,5 +68,8 @@ namespace iridium {
 	} 
 
 	llvm::verifyFunction(*func);
+
+	if(OPTIMIZE)
+	    m_FPM->run(*func);
     }
 }

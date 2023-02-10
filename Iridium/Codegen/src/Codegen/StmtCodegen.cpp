@@ -13,8 +13,6 @@ namespace iridium {
   void Codegen::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
   }
 
-  void Codegen::VisitIfStmt(const AST::IfStmt *stmt) {
-  }
 
   void Codegen::VisitErrStmt(const AST::Err *stmt) {
     std::cerr << stmt->m_Message << std::endl;
