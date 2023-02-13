@@ -1,0 +1,13 @@
+fn ifexpr() {
+  if 3 < 4 {
+    return 3;
+  }
+}
+
+fn elseexpr() {
+  if 4 < 3 {
+    return 2;
+  } else {
+    return 5;
+  }
+}

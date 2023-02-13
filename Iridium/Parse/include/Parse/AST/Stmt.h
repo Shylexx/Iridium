@@ -60,7 +60,7 @@ class FnStmt : public Stmt {
 public:
   ~FnStmt() override {}
   FnStmt(std::unique_ptr<ProtoStmt> prototype,
-         std::vector<std::unique_ptr<Stmt>> body)
+         std::unique_ptr<Expr> body)
       : Proto(std::move(prototype)), body(std::move(body)) {}
 
   void Accept(ASTVisitor* visitor) const override {
@@ -68,7 +68,7 @@ public:
   }
 
   std::unique_ptr<ProtoStmt> Proto;
-  std::vector<std::unique_ptr<Stmt>> body;
+  std::unique_ptr<Expr> body;
 private:
   NodeType nodeType = NodeType::FnDeclNode;
 };

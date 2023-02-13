@@ -91,14 +91,15 @@ namespace iridium {
     std::unique_ptr<AST::Expr> primary();
     // parses function calls and variable names
     std::unique_ptr<AST::Expr> identifier();
+    // parses if expressions
+    std::unique_ptr<AST::Expr> ifExpr();
+    // parses blocks
+    std::unique_ptr<AST::Expr> blockExpr();
 
 
     std::unique_ptr<AST::Expr> returnExpr();
     std::unique_ptr<AST::Stmt> forStatement();
     std::unique_ptr<AST::Stmt> whileStatement();
-    std::unique_ptr<AST::Stmt> blockStatement();
-    std::unique_ptr<AST::Stmt> ifStatement();
-    std::vector<std::unique_ptr<AST::Stmt>> blockExpr();
 
 
     // Types

@@ -92,6 +92,7 @@ class BlockExpr : public Expr {
 public:
   ~BlockExpr() override {}
   BlockExpr(std::vector<std::unique_ptr<Stmt>> body, ty::Type type) : body(std::move(body)), Expr(type) {}
+  BlockExpr(ty::Type type) : Expr(type) {}
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitBlockExpr(this);
   }
@@ -122,6 +123,12 @@ public:
       ty::Type type = ty::Type::Ty_Void)
     : Cond(std::move(Cond)), Then(std::move(Then)), Else(std::move(Else)), Expr(type) {}
   ~IfExpr() override {}
+
+  IfExpr(
+      std::unique_ptr<Expr> Cond,
+      std::unique_ptr<Expr> Then,
+      ty::Type type = ty::Type::Ty_Void)
+    : Cond(std::move(Cond)), Then(std::move(Then)), Else(nullptr), Expr(type) {}
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
 	  return visitor->VisitIfExpr(this);

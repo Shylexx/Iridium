@@ -6,6 +6,7 @@
 #include "llvm/IR/Function.h"
 
 #include <iostream>
+#include <llvm/IR/Instructions.h>
 
 namespace iridium {
 llvm::Value *Codegen::VisitIntExpr(const AST::IntExpr *expr) {
@@ -82,6 +83,37 @@ llvm::Value* Codegen::VisitIfExpr(const AST::IfExpr *expr) {
   llvm::BasicBlock* ThenBlock = llvm::BasicBlock::Create(*m_Context, "then", parent);
   llvm::BasicBlock* ElseBlock = llvm::BasicBlock::Create(*m_Context, "else");
   llvm::BasicBlock* MergeBlock = llvm::BasicBlock::Create(*m_Context, "ifcont");
+
+  m_Builder->CreateCondBr(CondV, ThenBlock, ElseBlock);
+
+  m_Builder->SetInsertPoint(ThenBlock);
+  llvm::Value* ThenV = expr->Then->Accept(this);
+  if(!ThenV)
+    return GenError("Error generating code for then block");
+
+  m_Builder->CreateBr(MergeBlock);
+  // codegen of 'then' can change curent block, update it to for the PHI
+  ThenBlock = m_Builder->GetInsertBlock();
+
+  // else block
+  parent->getBasicBlockList().push_back(ElseBlock);
+  m_Builder->SetInsertPoint(ElseBlock);
+
+  llvm::Value* ElseV = expr->Else->Accept(this);
+  if(!ElseV)
+    return GenError("Could not codegen else block");
+
+  m_Builder->CreateBr(MergeBlock);
+  ElseBlock = m_Builder->GetInsertBlock();
+
+  // Emit merge block
+  parent->getBasicBlockList().push_back(MergeBlock);
+  m_Builder->SetInsertPoint(MergeBlock);
+  llvm::PHINode* phiNode = 
+    m_Builder->CreatePHI(llvm::Type::getDoubleTy(*m_Context), 2, "iftmp");
+  phiNode->addIncoming(ThenV, ThenBlock);
+  phiNode->addIncoming(ElseV, ElseBlock);
+  return phiNode;
 }
 
 llvm::Value* Codegen::VisitAssignExpr(const AST::AssignExpr *expr) {
