@@ -268,7 +268,7 @@ namespace iridium {
         }
       }
 
-      std::cerr << "Parsed a function prototype" << std::endl;
+      std::cerr << "Parsed a function prototype: " << name << std::endl;
       return std::make_unique<AST::ProtoStmt>(std::move(name), std::move(params), retType);
     }
 

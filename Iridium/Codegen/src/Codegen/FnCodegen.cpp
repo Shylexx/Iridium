@@ -54,10 +54,14 @@ namespace iridium {
 	}
 	*/
 
+	/*
 	for(auto& bodyStmt : stmt->body) {
 	    std::cerr << "generating body statement" << std::endl;
 	    bodyStmt->Accept(this);
 	}
+	*/
+
+	stmt->body->Accept(this);
 
 
 	// Return type
