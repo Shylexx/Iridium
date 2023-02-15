@@ -34,7 +34,7 @@ namespace iridium {
       // Reset curtok to 0 to begin parsing again
       m_CurTok = 0;
       while (!atEnd()) {
-        m_CurUnit.add(declaration());
+        m_CurUnit.add(fnDefinition());
         if (m_CurUnit.error()) {
           m_CurUnit.errMessage();
           return false;
@@ -67,6 +67,7 @@ namespace iridium {
 
       return true;
     }
+
 
     std::unique_ptr<AST::Stmt> Parser::declaration() {
       // The only top level declarations are items
@@ -166,7 +167,7 @@ namespace iridium {
       }
     }
 
-    std::unique_ptr<AST::Stmt> Parser::makeError(std::string errMsg) {
+    std::unique_ptr<AST::Err> Parser::makeError(std::string errMsg) {
       return std::move(std::make_unique<AST::Err>(errMsg, currentLine()));
     }
 
@@ -219,7 +220,11 @@ namespace iridium {
       return std::make_unique<AST::VarDeclStmt>(name.getString(), ty::from_keyword(type), std::move(initializer));
     }
 
-    std::unique_ptr<AST::Stmt> Parser::fnProto() {
+    std::unique_ptr<AST::FnProto> Parser::makeProtoErr() {
+      return std::make_unique<AST::FnProto>();
+    }
+
+    std::unique_ptr<AST::FnProto> Parser::fnProto() {
       std::string name = consume(tok::TokType::Identifier, "Expected function name!").getString();
       if (hasError) {
         return makeError(errMsg);

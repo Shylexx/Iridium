@@ -60,6 +60,7 @@ namespace iridium {
     bool match(tok::TokType type);
     // helper for adding an error node;
     std::unique_ptr<AST::Stmt> makeError(std::string errMsg);
+    std::unique_ptr<AST::FnProto> makeProtoError(std::string errMsg);
 
     tok::Token consume(tok::TokType type, std::string errMessage);
 
@@ -67,8 +68,8 @@ namespace iridium {
     tok::Token consumeTy(std::string errMessage);
 
     // Statements
-    std::unique_ptr<AST::Stmt> statement();
-    std::unique_ptr<AST::Stmt> declaration();
+    std::unique_ptr<AST::Expr> statement();
+    std::unique_ptr<AST::Expr> declaration();
     // Items
     std::unique_ptr<AST::FnProto> fnProto();
     std::unique_ptr<AST::FnDef> fnDefinition();
@@ -95,8 +96,8 @@ namespace iridium {
 
 
     std::unique_ptr<AST::Expr> returnExpr();
-    std::unique_ptr<AST::Stmt> forStatement();
-    std::unique_ptr<AST::Stmt> whileStatement();
+    //std::unique_ptr<AST::Stmt> forStatement();
+    //std::unique_ptr<AST::Stmt> whileStatement();
 
 
     // Types
