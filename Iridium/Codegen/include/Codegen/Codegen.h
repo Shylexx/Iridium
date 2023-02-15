@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "Parse/AST/ASTVisitor.h"
-#include "Parse/AST/Stmt.h"
 #include "Parse/AST/Expr.h"
 #include "Parse/AST/Unit.h"
 #include "Parse/Type/Type.h"
@@ -28,11 +27,8 @@ public:
   void InitModuleAndFPM();
   void PrintIR();
   // statements
-  void VisitExprStmt(const AST::ExprStmt *stmt) override; // TODO
-  void VisitProtoStmt(const AST::ProtoStmt *stmt) override; // TODO
-  void VisitFnStmt(const AST::FnStmt *stmt) override; // TODO
-  void VisitVarDeclStmt(const AST::VarDeclStmt *stmt) override; // TODO
-  void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt) override; // TODO
+  void VisitFnProto(const AST::FnProto *stmt) override; // TODO
+  void VisitFnDef(const AST::FnDef *stmt) override; // TODO
   void VisitErrStmt(const AST::Err* stmt) override; // TODO
 
   // expressions

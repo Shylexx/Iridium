@@ -96,9 +96,25 @@ public:
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitBlockExpr(this);
   }
-
-private:
   std::vector<std::unique_ptr<Stmt>> body;
+};
+
+class VarDeclExpr : public Expr {
+public:
+  ~VarDeclExpr() override {}
+  VarDeclExpr(const std::string &Name, 
+      ty::Type ty, std::unique_ptr<AST::Expr>&& initializer = {}) 
+    : m_Name(Name), m_Initializer(std::move(initializer)), type(ty), Expr(ty) {}
+  
+  llvm::Value* Accept(ASTVisitor* visitor) const override {
+    return visitor->VisitVarDeclExpr(this);
+  }
+
+  ty::Type type;
+  std::string m_Name;
+  std::unique_ptr<AST::Expr> m_Initializer;
+private:
+  NodeType nodeType = NodeType::VarDeclNode;
 };
 
 class CallExpr : public Expr {

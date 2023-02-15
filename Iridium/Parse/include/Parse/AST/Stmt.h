@@ -13,7 +13,7 @@
 namespace iridium {
 namespace AST {
 
-
+/*
 class Stmt {
 public:
   virtual ~Stmt() {}
@@ -37,41 +37,6 @@ private:
   NodeType nodeType = NodeType::ErrorNode;
 };
 
-class ProtoStmt : public Stmt {
-public:
-  ~ProtoStmt() override {}
-  ProtoStmt(const std::string& name,
-      std::vector<std::pair<tok::Token, ty::Type>> params,
-      ty::Type type = ty::Type::Ty_Void)
-    : name(name), params(std::move(params)), retType(type) {}
-
-  void Accept(ASTVisitor* visitor) const override {
-	  visitor->VisitProtoStmt(this);
-  }
-
-  std::string name;
-  std::vector<std::pair<tok::Token, ty::Type>> params;
-  ty::Type retType = ty::Type::Ty_Void;
-private:
-  NodeType nodeType = NodeType::FnProtoNode;
-};
-
-class FnStmt : public Stmt {
-public:
-  ~FnStmt() override {}
-  FnStmt(std::unique_ptr<ProtoStmt> prototype,
-         std::unique_ptr<Expr> body)
-      : Proto(std::move(prototype)), body(std::move(body)) {}
-
-  void Accept(ASTVisitor* visitor) const override {
-	  visitor->VisitFnStmt(this);
-  }
-
-  std::unique_ptr<ProtoStmt> Proto;
-  std::unique_ptr<Expr> body;
-private:
-  NodeType nodeType = NodeType::FnDeclNode;
-};
 
 class VarDeclStmt : public Stmt {
 public:
@@ -125,6 +90,7 @@ public:
 private:
   NodeType nodeType = NodeType::ExprStmtNode;
 };
+*/
 } // namespace AST
 } // namespace iridium
 #endif

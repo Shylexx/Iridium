@@ -1,9 +1,9 @@
 #include "Parse/Parser.h"
+#include "Parse/AST/Fn.h"
 #include "Lex/Lexer.h"
 #include "Lex/TokType.h"
 #include "Lex/Token.h"
 #include "Parse/AST/NodeType.h"
-#include "Parse/AST/Stmt.h"
 #include "Parse/AST/Expr.h"
 #include "Parse/Type/Type.h"
 #include <iostream>
@@ -49,15 +49,14 @@ namespace iridium {
       while(!atEnd()) {
         if(match(tok::TokType::Fn)) {
           // if we error, return false to show the err
-          std::unique_ptr<AST::Stmt> proto = fnProto();
-          if(auto err = dynamic_cast<AST::Err*>(proto.get())) {
+          std::unique_ptr<AST::FnProto> proto = fnProto();
+          if(proto->error) {
             std::cerr << "Error parsing function prototype!" << std::endl;
-            std::cerr << "Syntax Error on line [" << err->m_SourceLine
-            << "]: " << err->m_Message << std::endl;
+            std::cerr << "Syntax Error on line [" << proto->line()
+            << "]: " << proto->errMsg << std::endl;
               return false;
           }
-          std::unique_ptr<AST::ProtoStmt> casted(static_cast<AST::ProtoStmt*>(proto.release()));
-          if(!m_CurUnit.addProto(std::move(casted))) {
+          if(!m_CurUnit.addProto(std::move(proto))) {
             std::cerr << "Cannot Redefine Existing Function!" << std::endl;
             //m_CurUnit.protoErrMessage();
             return false;
@@ -372,6 +371,7 @@ namespace iridium {
           break;
         case tok::TokType::If:
           expr = ifExpr();
+          break;
         default:
           expr = expression();
           break;
@@ -451,10 +451,10 @@ namespace iridium {
         tok::TokType op = previous().getTokType();
         std::unique_ptr<AST::Expr> rhs = term();
         if(expr->retType == rhs->retType) {
-          expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs), expr->retType);
+          expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs), ty::Type::Ty_Bool);
         } else {
-          std::cerr << "Mismatched types in binary expression" << std::endl;
-          return std::make_unique<AST::ErrExpr>("Mismatched types in binary expression", currentLine());
+          std::cerr << "binary comparison must compare two expressions of matching type" << std::endl;
+          return std::make_unique<AST::ErrExpr>("binary comparison must compare two expressions of matching type", currentLine());
         }
       }
 

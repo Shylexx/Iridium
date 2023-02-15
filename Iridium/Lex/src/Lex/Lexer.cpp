@@ -191,6 +191,7 @@ namespace iridium {
 
     // If no decimal point found, return integer
     numString = m_SourceCode.substr(m_TokenStartIndex, currentTokenLength());
+    std::cerr << "lexing i32" << std::endl;
     return addToken(tok::Token(currentTokenLength(), tok::TokType::i32, (int64_t)std::stol(numString)));
   }
 

@@ -1,15 +1,16 @@
 #include "Parse/AST/Unit.h"
+#include "Parse/AST/Expr.h"
+#include "Parse/AST/Fn.h"
 #include "Parse/AST/NodeType.h"
-#include "Parse/AST/Stmt.h"
 #include <iostream>
 
 namespace iridium {
 namespace AST {
-void Unit::add(std::unique_ptr<AST::Stmt> stmt) {
-  m_Items.push_back(std::move(stmt));
+void Unit::add(std::unique_ptr<AST::FnDef> fn) {
+  m_Items.push_back(std::move(fn));
 }
 
-bool Unit::addProto(std::unique_ptr<AST::ProtoStmt> proto) {
+bool Unit::addProto(std::unique_ptr<AST::FnProto> proto) {
   if (m_Functions.find(proto->name) == m_Functions.end()) {
     m_Functions.insert({proto->name, std::move(proto)});
     // return true when added successfully
@@ -19,33 +20,21 @@ bool Unit::addProto(std::unique_ptr<AST::ProtoStmt> proto) {
 }
 
 void Unit::protoErrMessage() {
-  AST::Err *message = static_cast<AST::Err *>(m_ProtoErrors.back().get());
-  std::cerr << "Syntax Error on line [" << message->m_SourceLine
-            << "]: " << message->m_Message << std::endl;
+  std::cerr << "Syntax Error on line [" << m_ProtoErrors.back()->line()
+            << "]: " << m_ProtoErrors.back()->errMsg << std::endl;
 }
 
 bool Unit::error() {
-  // if backmost item is an error stmt, or an expr stmt holding an errexpr, its
-  // an error!
-  if (m_Items.back()->node() == NodeType::ErrorNode) {
+  if (m_Items.back()->error) {
     return true;
-  } else if (m_Items.back()->node() == NodeType::ExprStmtNode) {
-    return static_cast<AST::ExprStmt *>(m_Items.back().get())->node() ==
-           NodeType::ErrorNode;
   }
   return false;
 }
 
 void Unit::errMessage() {
-  if (m_Items.back()->node() == NodeType::ErrorNode) {
-    AST::Err *stmt = static_cast<AST::Err *>(m_Items.back().get());
-    std::cerr << "Syntax Error in statement on line [" << stmt->m_SourceLine
-              << "]: " << stmt->m_Message << std::endl;
-  } else if (m_Items.back()->node() == NodeType::ExprStmtNode) {
-    AST::ErrExpr *expr = static_cast<AST::ErrExpr *>(
-        static_cast<AST::ExprStmt *>(m_Items.back().get())->Expression.get());
-    std::cerr << "Syntax Error in statement on line [" << expr->Line
-              << "]: " << expr->message() << std::endl;
+  if (m_Items.back()->error) {
+    std::cerr << "Syntax Error in function on line [" << m_Items.back()->line()
+              << "]: " << m_Items.back()->errMsg << std::endl;
   }
 }
 

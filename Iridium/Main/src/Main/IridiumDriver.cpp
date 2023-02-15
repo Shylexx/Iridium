@@ -4,6 +4,10 @@
 #include <iostream>
 
 namespace iridium {
+  Driver::Driver() {
+    m_Codegen.InitModuleAndFPM();
+  }
+
   void Driver::CompileFile(const std::string &path) {
     std::string source = ReadFileToString(path);
     std::cerr << "Parsing File of name: " << path << std::endl;

@@ -4,7 +4,6 @@
 #include "Lex/Lexer.h"
 #include "Lex/TokType.h"
 #include "Parse/AST/Expr.h"
-#include "Parse/AST/Stmt.h"
 #include "Lex/Token.h"
 #include "Parse/AST/Unit.h"
 #include <string>
@@ -71,11 +70,9 @@ namespace iridium {
     std::unique_ptr<AST::Stmt> statement();
     std::unique_ptr<AST::Stmt> declaration();
     // Items
-    std::unique_ptr<AST::Stmt> fnProto();
-    std::unique_ptr<AST::Stmt> fnDefinition();
-    std::unique_ptr<AST::Stmt> varDeclaration(tok::TokType type);
-
-    std::unique_ptr<AST::Stmt> exprStatement();
+    std::unique_ptr<AST::FnProto> fnProto();
+    std::unique_ptr<AST::FnDef> fnDefinition();
+    std::unique_ptr<AST::Expr> varDeclaration(tok::TokType type);
 
     std::unique_ptr<AST::Expr> expression();
     std::unique_ptr<AST::Expr> paren();

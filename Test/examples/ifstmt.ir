@@ -1,10 +1,10 @@
-fn ifexpr() {
+fn ifexpr() -> i32 {
   if 3 < 4 {
     return 3;
   }
 }
 
-fn elseexpr() {
+fn elseexpr() -> i32 {
   if 4 < 3 {
     return 2;
   } else {

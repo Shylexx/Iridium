@@ -4,13 +4,11 @@
 #include "llvm/IR/Value.h"
 namespace iridium {
 namespace AST {
-  class ExprStmt;
-  class ProtoStmt;
-  class FnStmt;
-  class VarDeclStmt;
-  class GlobVarDeclStmt;
+  class FnProto;
+  class FnDef;
   class Err;
 
+  class VarDeclExpr;
   class IntExpr;
   class FloatExpr;
   class BoolExpr;
@@ -30,15 +28,13 @@ namespace AST {
   class ASTVisitor {
   public:
     // statements
-    virtual void VisitExprStmt(const AST::ExprStmt* stmt) = 0;
-    virtual void VisitProtoStmt(const AST::ProtoStmt* stmt) = 0;
-    virtual void VisitFnStmt(const AST::FnStmt* stmt) = 0;
-    virtual void VisitVarDeclStmt(const AST::VarDeclStmt* stmt) = 0;
-    virtual void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt* stmt) = 0;
+    virtual void VisitFnProto(const AST::FnProto* stmt) = 0;
+    virtual void VisitFnDef(const AST::FnDef* stmt) = 0;
     virtual void VisitErrStmt(const AST::Err* stmt) = 0;
 
 
     //expressions
+    virtual llvm::Value* VisitVarDeclExpr(const AST::VarDeclExpr* stmt) = 0;
     virtual llvm::Value* VisitIntExpr(const AST::IntExpr* expr) = 0;
     virtual llvm::Value* VisitFloatExpr(const AST::FloatExpr* expr) = 0;
     virtual llvm::Value* VisitBoolExpr(const AST::BoolExpr* expr) = 0;

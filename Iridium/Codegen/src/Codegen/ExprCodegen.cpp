@@ -1,7 +1,6 @@
 #include "Codegen/Codegen.h"
 #include "Lex/TokType.h"
 #include "Parse/AST/Expr.h"
-#include "Parse/AST/Stmt.h"
 #include "Parse/Type/Type.h"
 #include "llvm/IR/Function.h"
 
@@ -50,6 +49,8 @@ llvm::Value *Codegen::VisitBinaryExpr(const AST::BinaryExpr *expr) {
     return m_Builder->CreateSub(left, right, "subtmp");
   case tok::TokType::Asterisk:
     return m_Builder->CreateMul(left, right, "multmp");
+  case tok::TokType::LessThan:
+    return m_Builder->CreateICmpULT(left, right, "cmptmp");
   default:
     return GenError("Invalid Binary Operator"); // RETURN ERROR TODO
   }
@@ -87,9 +88,10 @@ llvm::Value* Codegen::VisitIfExpr(const AST::IfExpr *expr) {
   m_Builder->CreateCondBr(CondV, ThenBlock, ElseBlock);
 
   m_Builder->SetInsertPoint(ThenBlock);
-  llvm::Value* ThenV = expr->Then->Accept(this);
-  if(!ThenV)
-    return GenError("Error generating code for then block");
+  llvm::Value* thenVal;
+  for(auto& thenExpr : expr->Then) {
+    thenVal = thenExpr.Accept(this);
+  }
 
   m_Builder->CreateBr(MergeBlock);
   // codegen of 'then' can change curent block, update it to for the PHI
@@ -121,6 +123,9 @@ llvm::Value* Codegen::VisitAssignExpr(const AST::AssignExpr *expr) {
 }
 
 llvm::Value* Codegen::VisitBlockExpr(const AST::BlockExpr *expr) {
+  for(auto& stmt : expr->body) {
+    stmt->Accept(this);
+  }
   return nullptr;
 }
 

@@ -1,5 +1,4 @@
 #include "Codegen/Codegen.h"
-#include "Parse/AST/Stmt.h"
 #include "Parse/Type/Type.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Function.h"
@@ -62,7 +61,6 @@ namespace iridium {
 	*/
 
 	stmt->body->Accept(this);
-
 
 	// Return type
 	// if no return statement, return Void
