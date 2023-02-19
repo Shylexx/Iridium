@@ -167,8 +167,8 @@ namespace iridium {
       }
     }
 
-    std::unique_ptr<AST::Err> Parser::makeError(std::string errMsg) {
-      return std::move(std::make_unique<AST::Err>(errMsg, currentLine()));
+    std::unique_ptr<AST::Expr> Parser::makeError(std::string errMsg) {
+      return std::move(std::make_unique<AST::Expr>(errMsg, currentLine()));
     }
 
     tok::Token Parser::advance() {
@@ -191,7 +191,7 @@ namespace iridium {
     }
     
 
-    std::unique_ptr<AST::Stmt> Parser::varDeclaration(tok::TokType type) {
+    std::unique_ptr<AST::Expr> Parser::varDeclaration(tok::TokType type) {
       tok::Token name = consume(tok::TokType::Identifier, "Expected Identifier For Variable!");
       if (hasError) {
         return makeError(errMsg);
@@ -209,31 +209,33 @@ namespace iridium {
 
       if(m_ScopeIndex < 1) {
         if(!initializer.get()) {
-          return std::make_unique<AST::Err>("Global Variables require an initializer!", currentLine());
+          return std::make_unique<AST::ErrExpr>("Global Variables require an initializer!", currentLine());
         }
+        /*
         std::cerr << "Parsed a global var decl of name " << name.getString() << std::endl;
         return std::make_unique<AST::GlobVarDeclStmt>(name.getString(), ty::from_keyword(type), std::move(initializer));
+        */
       }
 
 
       std::cout << "Parsed a Variable Declaration of name " << name.getString() << std::endl;
-      return std::make_unique<AST::VarDeclStmt>(name.getString(), ty::from_keyword(type), std::move(initializer));
+      return std::make_unique<AST::VarDeclExpr>(name.getString(), ty::from_keyword(type), std::move(initializer));
     }
 
-    std::unique_ptr<AST::FnProto> Parser::makeProtoErr() {
-      return std::make_unique<AST::FnProto>();
+    std::unique_ptr<AST::FnProto> Parser::makeProtoError(const std::string& errMsg) {
+      return std::make_unique<AST::FnProto>(errMsg);
     }
 
     std::unique_ptr<AST::FnProto> Parser::fnProto() {
       std::string name = consume(tok::TokType::Identifier, "Expected function name!").getString();
       if (hasError) {
-        return makeError(errMsg);
+        return makeProtoError(errMsg);
       }
 
       consume(tok::TokType::OpenParen, "Expected '(' after function identifier");
 
       if (hasError) {
-        return makeError(errMsg);
+        return makeProtoError(errMsg);
       }
 
       std::vector<std::pair<tok::Token, ty::Type>> params;
@@ -242,15 +244,15 @@ namespace iridium {
         do {
           tok::Token paramName = consume(tok::TokType::Identifier, "Expected parameter name!");
           if (hasError) {
-            return makeError(errMsg);
+            return makeProtoError(errMsg);
           }
           consume(tok::TokType::Colon, "Expected ':' between parameter name and type!");
           if (hasError) {
-            return makeError(errMsg);
+            return makeProtoError(errMsg);
           }
           tok::Token paramType = consumeTy("Expected typename!");
           if (hasError) {
-            return makeError(errMsg);
+            return makeProtoError(errMsg);
           }
           params.push_back(std::make_pair<tok::Token, ty::Type>(std::move(paramName), ty::from_tok(paramType.getTokType())));
         } while (match(tok::TokType::Comma));
@@ -258,7 +260,7 @@ namespace iridium {
 
       consume(tok::TokType::CloseParen, "Expected ')' after function parameter(s)");
       if (hasError) {
-        return makeError(errMsg);
+        return makeProtoError(errMsg);
       }
 
       ty::Type retType = ty::Type::Ty_Void;
@@ -273,40 +275,36 @@ namespace iridium {
       }
 
       std::cerr << "Parsed a function prototype: " << name << std::endl;
-      return std::make_unique<AST::ProtoStmt>(std::move(name), std::move(params), retType);
+      return std::make_unique<AST::FnProto>(std::move(name), std::move(params), retType);
     }
 
-    std::unique_ptr<AST::Stmt> Parser::fnDefinition() {
+    std::unique_ptr<AST::FnDef> Parser::fnDefinition() {
 
-      std::unique_ptr<AST::Stmt> prototype = fnProto();
+      std::unique_ptr<AST::FnProto> prototype = fnProto();
 
       // if parsing proto doesnt get a prototype, return the error node
-      if(!dynamic_cast<AST::ProtoStmt*>(prototype.get())) {
-        return prototype;
+      if(!prototype) {
+        return makeDefError(prototype->errMsg);
         std::cerr << "Proto Stmt did not cast" << std::endl;
       }
 
-      // make new unique ptr from abstract one and release old pointer
-      // this is dodgy but if it works it works
-      std::unique_ptr<AST::ProtoStmt> proto(static_cast<AST::ProtoStmt*>(prototype.release()));
-
       consume(tok::TokType::OpenBrace, "Expected '{' after function declaration");
       if (hasError) {
-        return makeError(errMsg);
+        return makeDefError(errMsg);
       }
 
-      std::cerr << "Parsing body for : " << proto->name << std::endl;
-      m_CurFunction = proto->name;
+      std::cerr << "Parsing body for : " << prototype->name << std::endl;
+      m_CurFunction = prototype->name;
 
       std::unique_ptr<AST::Expr> body = blockExpr();
 
       m_CurFunction.clear();
 
       std::cout << "Parsed a function with name: " <<
-        static_cast<AST::ProtoStmt*>(proto.get())->name << 
-        " and arity of " << static_cast<AST::ProtoStmt*>(proto.get())->params.size() << std::endl;
+        prototype->name << 
+        " and arity of " << prototype->params.size() << std::endl;
       
-      return std::make_unique<AST::FnStmt>(std::move(proto), std::move(body));
+      return std::make_unique<AST::FnDef>(std::move(prototype), std::move(body));
     }
 
     std::unique_ptr<AST::Expr> Parser::ifExpr() {
@@ -356,14 +354,14 @@ namespace iridium {
       }
     }
 
-    std::unique_ptr<AST::Stmt> Parser::forStatement() {
+    std::unique_ptr<AST::Expr> Parser::forExpr() {
 
-      return std::make_unique<AST::Err>("Unimplemented!");
+      return std::make_unique<AST::ErrExpr>("Unimplemented!");
     }
 
-    std::unique_ptr<AST::Stmt> Parser::whileStatement() {
+    std::unique_ptr<AST::Expr> Parser::whileExpr() {
 
-      return std::make_unique<AST::Err>("Unimplemented!");
+      return std::make_unique<AST::ErrExpr>("Unimplemented!");
     }
 
 

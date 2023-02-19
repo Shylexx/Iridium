@@ -59,8 +59,9 @@ namespace iridium {
     // Equivalent of check but consumes the token
     bool match(tok::TokType type);
     // helper for adding an error node;
-    std::unique_ptr<AST::Stmt> makeError(std::string errMsg);
-    std::unique_ptr<AST::FnProto> makeProtoError(std::string errMsg);
+    std::unique_ptr<AST::ErrExpr> makeError(std::string errMsg);
+    std::unique_ptr<AST::FnProto> makeProtoError(const std::string& errMsg);
+    std::unique_ptr<AST::FnDef> makeDefError(const std::string& errMsg);
 
     tok::Token consume(tok::TokType type, std::string errMessage);
 
