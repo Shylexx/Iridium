@@ -18,6 +18,7 @@ enum class Type {
 
 Type from_tok(tok::TokType tok);
 Type from_keyword(tok::TokType tok);
+std::string to_string(Type type);
 } //namespace ty
 } //namespace iridium
 

@@ -299,7 +299,8 @@ namespace iridium {
       m_CurFunction.clear();
 
       std::cout << "Parsed a function with name: " <<
-        static_cast<AST::ProtoStmt*>(proto.get())->name << 
+        static_cast<AST::ProtoStmt*>(proto.get())->name <<
+        " return type of: " << ty::to_string(static_cast<AST::ProtoStmt*>(proto.get())->retType) <<
         " and arity of " << static_cast<AST::ProtoStmt*>(proto.get())->params.size() << std::endl;
       
       return std::make_unique<AST::FnStmt>(std::move(proto), std::move(body));
@@ -372,6 +373,7 @@ namespace iridium {
           break;
         case tok::TokType::If:
           expr = ifExpr();
+          break;
         default:
           expr = expression();
           break;

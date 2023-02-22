@@ -37,5 +37,26 @@ namespace ty {
         return Type::Ty_Err;
     }
   }
+
+  std::string to_string(Type type) {
+    switch(type) {
+      case(Type::Ty_Bool):
+        return "TY_BOOL";
+      case(Type::Ty_f64):
+        return "TY_f64";
+      case(Type::Ty_f32):
+        return "TY_f32";
+      case(Type::Ty_i64):
+        return "TY_i64";
+      case(Type::Ty_i32):
+        return "TY_i32";
+      case(Type::Ty_Void):
+        return "TY_Void";
+      case(Type::Ty_Err):
+        return "TY_Err";
+      default:
+        return "READERR";
+    }
+  }
 } //namespace ty
 } //namespace iridium
