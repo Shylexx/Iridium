@@ -9,6 +9,7 @@ namespace AST {
   class FnStmt;
   class VarDeclStmt;
   class GlobVarDeclStmt;
+  class BlockStmt;
   class Err;
 
   class IntExpr;
@@ -16,7 +17,6 @@ namespace AST {
   class BoolExpr;
   class UnaryExpr;
   class BinaryExpr;
-  class BlockExpr;
   class CallExpr;
   class ReturnExpr;
   class ErrExpr;
@@ -36,6 +36,7 @@ namespace AST {
     virtual void VisitVarDeclStmt(const AST::VarDeclStmt* stmt) = 0;
     virtual void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt* stmt) = 0;
     virtual void VisitErrStmt(const AST::Err* stmt) = 0;
+    virtual void VisitBlockStmt(const AST::BlockStmt* stmt) = 0;
 
 
     //expressions
@@ -43,7 +44,6 @@ namespace AST {
     virtual llvm::Value* VisitFloatExpr(const AST::FloatExpr* expr) = 0;
     virtual llvm::Value* VisitBoolExpr(const AST::BoolExpr* expr) = 0;
     virtual llvm::Value* VisitBinaryExpr(const AST::BinaryExpr* expr) = 0;
-    virtual llvm::Value* VisitBlockExpr(const AST::BlockExpr* expr) = 0;
     virtual llvm::Value* VisitCallExpr(const AST::CallExpr* expr) = 0;
     virtual llvm::Value* VisitIfExpr(const AST::IfExpr* expr) = 0;
     virtual llvm::Value* VisitReturnExpr(const AST::ReturnExpr* expr) = 0;

@@ -13,6 +13,11 @@ namespace iridium {
   void Codegen::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
   }
 
+  void Codegen::VisitBlockStmt(const AST::BlockStmt *stmt) {
+    for(auto& bodyStmt : stmt->body) {
+      bodyStmt->Accept(this);
+    }
+  }
 
   void Codegen::VisitErrStmt(const AST::Err *stmt) {
     std::cerr << stmt->m_Message << std::endl;

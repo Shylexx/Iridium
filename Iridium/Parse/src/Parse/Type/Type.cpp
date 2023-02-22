@@ -41,7 +41,7 @@ namespace ty {
   std::string to_string(Type type) {
     switch(type) {
       case(Type::Ty_Bool):
-        return "TY_BOOL";
+        return "TY_Bool";
       case(Type::Ty_f64):
         return "TY_f64";
       case(Type::Ty_f32):

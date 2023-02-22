@@ -60,7 +60,7 @@ class FnStmt : public Stmt {
 public:
   ~FnStmt() override {}
   FnStmt(std::unique_ptr<ProtoStmt> prototype,
-         std::unique_ptr<Expr> body)
+         std::unique_ptr<Stmt> body)
       : Proto(std::move(prototype)), body(std::move(body)) {}
 
   void Accept(ASTVisitor* visitor) const override {
@@ -68,7 +68,7 @@ public:
   }
 
   std::unique_ptr<ProtoStmt> Proto;
-  std::unique_ptr<Expr> body;
+  std::unique_ptr<Stmt> body;
 private:
   NodeType nodeType = NodeType::FnDeclNode;
 };
@@ -105,6 +105,16 @@ private:
   NodeType nodeType = NodeType::GlobVarDeclNode;
 };
 
+class BlockStmt : public Stmt {
+public:
+  ~BlockStmt() override {}
+  BlockStmt(std::vector<std::unique_ptr<Stmt>> body, ty::Type type) : body(std::move(body))  {}
+  void Accept(ASTVisitor* visitor) const override {
+    return visitor->VisitBlockStmt(this);
+  }
+
+  std::vector<std::unique_ptr<Stmt>> body;
+};
 
 class ExprStmt : public Stmt {
 public:

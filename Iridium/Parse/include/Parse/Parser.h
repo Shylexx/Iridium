@@ -94,10 +94,11 @@ namespace iridium {
     // parses if expressions
     std::unique_ptr<AST::Expr> ifExpr();
     // parses blocks
-    std::unique_ptr<AST::Expr> blockExpr();
 
 
     std::unique_ptr<AST::Expr> returnExpr();
+
+    std::unique_ptr<AST::Stmt> blockStmt();
     std::unique_ptr<AST::Stmt> forStatement();
     std::unique_ptr<AST::Stmt> whileStatement();
 

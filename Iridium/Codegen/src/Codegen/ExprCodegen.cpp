@@ -87,9 +87,7 @@ llvm::Value* Codegen::VisitIfExpr(const AST::IfExpr *expr) {
   m_Builder->CreateCondBr(CondV, ThenBlock, ElseBlock);
 
   m_Builder->SetInsertPoint(ThenBlock);
-  llvm::Value* ThenV = expr->Then->Accept(this);
-  if(!ThenV)
-    return GenError("Error generating code for then block");
+  stmt->Then->Accept(this);
 
   m_Builder->CreateBr(MergeBlock);
   // codegen of 'then' can change curent block, update it to for the PHI
@@ -99,9 +97,7 @@ llvm::Value* Codegen::VisitIfExpr(const AST::IfExpr *expr) {
   parent->getBasicBlockList().push_back(ElseBlock);
   m_Builder->SetInsertPoint(ElseBlock);
 
-  llvm::Value* ElseV = expr->Else->Accept(this);
-  if(!ElseV)
-    return GenError("Could not codegen else block");
+  stmt->Else->Accept(this);
 
   m_Builder->CreateBr(MergeBlock);
   ElseBlock = m_Builder->GetInsertBlock();
@@ -117,10 +113,6 @@ llvm::Value* Codegen::VisitIfExpr(const AST::IfExpr *expr) {
 }
 
 llvm::Value* Codegen::VisitAssignExpr(const AST::AssignExpr *expr) {
-  return nullptr;
-}
-
-llvm::Value* Codegen::VisitBlockExpr(const AST::BlockExpr *expr) {
   return nullptr;
 }
 
