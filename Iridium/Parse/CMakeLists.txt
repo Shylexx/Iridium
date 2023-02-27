@@ -20,4 +20,11 @@ target_link_libraries(IridiumParse
   PUBLIC
   IridiumLex
   LLVMCore
+  LLVMTransformUtils
+  LLVMAnalysis
+  LLVMTarget
+  LLVMAsmPrinter
+  LLVMMC
+  LLVMCodeGen
+  LLVMAnalysis
 )

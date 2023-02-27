@@ -58,13 +58,11 @@ namespace iridium {
     mpm.run(*m_Module, mam);
     */
     
-    /*
     m_FPM->add(llvm::createPromoteMemoryToRegisterPass());
     m_FPM->add(llvm::createInstructionCombiningPass());
     m_FPM->add(llvm::createReassociatePass());
     m_FPM->add(llvm::createGVNPass());
     m_FPM->add(llvm::createCFGSimplificationPass());
-    */
 
     m_FPM->doInitialization();
   }
