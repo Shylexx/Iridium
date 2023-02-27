@@ -1,10 +1,17 @@
 #include "Codegen/Codegen.h"
 #include "llvm/IR/LLVMContext.h"
+#include <llvm/IR/PassManager.h>
 #include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Transforms/Scalar/LoopPassManager.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/Target/TargetMachine.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/Transforms/Utils.h>
 #include "llvm/Support/raw_ostream.h"
 #include <iostream>
+#include <optional>
 
 namespace iridium {
   Codegen::Codegen() {
@@ -24,14 +31,41 @@ namespace iridium {
     m_Builder = std::unique_ptr<llvm::IRBuilder<>>(new llvm::IRBuilder<>(*m_Context));
 
     m_FPM = std::make_unique<llvm::legacy::FunctionPassManager>(m_Module.get());
+
+    /*
+    llvm::LoopAnalysisManager lam;
+    llvm::FunctionAnalysisManager fam;
+    llvm::CGSCCAnalysisManager cgam;
+    llvm::ModuleAnalysisManager mam;
+
+    llvm::PipelineTuningOptions options;
+    options.LoopInterleaving = true;
+    options.LoopUnrolling = true;
+    options.LoopVectorization = true;
+    options.SLPVectorization = true;
+    options.MergeFunctions = true;
+    llvm::PassBuilder passBuilder;
+
+    //fam.registerPass([&] { return passBuilder.buildDefaultAAPipeline(); });
+    passBuilder.registerModuleAnalyses(mam);
+    passBuilder.registerCGSCCAnalyses(cgam);
+    passBuilder.registerFunctionAnalyses(fam);
+    passBuilder.registerLoopAnalyses(lam);
+    passBuilder.crossRegisterProxies(lam, fam, cgam, mam);
+    llvm::ModulePassManager mpm;
+    mpm = passBuilder.buildO0DefaultPipeline(llvm::OptimizationLevel::O0);
+
+    mpm.run(*m_Module, mam);
+    */
     
-    if(OPTIMIZE) {
-      m_FPM->add(llvm::createInstructionCombiningPass());
-      m_FPM->add(llvm::createReassociatePass());
-      m_FPM->add(llvm::createGVNPass());
-      m_FPM->add(llvm::createCFGSimplificationPass());
-    }
-    
+    /*
+    m_FPM->add(llvm::createPromoteMemoryToRegisterPass());
+    m_FPM->add(llvm::createInstructionCombiningPass());
+    m_FPM->add(llvm::createReassociatePass());
+    m_FPM->add(llvm::createGVNPass());
+    m_FPM->add(llvm::createCFGSimplificationPass());
+    */
+
     m_FPM->doInitialization();
   }
 

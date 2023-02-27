@@ -114,7 +114,16 @@ llvm::Value* Codegen::VisitVarExpr(const AST::VarExpr *expr) {
 }
 
 llvm::Value* Codegen::VisitAssignExpr(const AST::AssignExpr *expr) {
-  return nullptr;
+  llvm::Value* val = expr->Val->Accept(this);
+  if(!val)
+    return GenError("Couldn't assign value to variable!");
+
+  llvm::Value* variable = m_NamedValues[expr->Name];
+  if(!variable)
+    return GenError("Unknown variable name");
+
+  m_Builder->CreateStore(val, variable);
+  return val;
 }
 
 llvm::Value *Codegen::VisitCallExpr(const AST::CallExpr *expr) {

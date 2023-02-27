@@ -4,6 +4,7 @@
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Type.h"
+#include <llvm/IR/Instructions.h>
 #include <llvm/IR/Verifier.h>
 
 #include <iostream>
@@ -43,8 +44,13 @@ namespace iridium {
 	// Making params available to the function
 	
 
-	/*
 	m_NamedValues.clear();
+	for(int i = 0; i < stmt->Proto->params.size(); i++) {
+	    llvm::AllocaInst* alloca = m_Builder->CreateAlloca(from_Ty(stmt->Proto->params[i].second));
+	    m_NamedValues[stmt->Proto->params[i].first.getString()] = alloca;
+	    m_Builder->CreateStore(func->getArg(i), alloca);
+	}
+	/*
 	for(auto& Arg : func->args()) {
 	    int paramNo = Arg.getArgNo();
 	    std::string argName = stmt->params[paramNo].first.getString();

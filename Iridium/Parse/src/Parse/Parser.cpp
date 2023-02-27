@@ -78,19 +78,22 @@ namespace iridium {
       // Only look for other statements if we are not in the global scope (can be a function body)
       if (m_ScopeIndex > 0) {
         if (match(tok::TokType::i64KW)) {
-          return varDeclaration(tok::TokType::i64);
+          return varDeclaration(ty::Type::Ty_i64);
         }
         if (match(tok::TokType::i32KW)) {
-          return varDeclaration(tok::TokType::i32);
+          return varDeclaration(ty::Type::Ty_i32);
         }
         if (match(tok::TokType::f64KW)) {
-          return varDeclaration(tok::TokType::f64);
+          return varDeclaration(ty::Type::Ty_f64);
         }
         if (match(tok::TokType::f32KW)) {
-          return varDeclaration(tok::TokType::f32);
+          return varDeclaration(ty::Type::Ty_f32);
+        }
+        if (match(tok::TokType::BoolKW)) {
+          return varDeclaration(ty::Type::Ty_Bool);
         }
         if (match(tok::TokType::StringKW)) {
-          return varDeclaration(tok::TokType::String);
+          return varDeclaration(ty::Type::Ty_Void);
         }
       //if(match(tok::TokType::Struct)) {
       //  return structDeclaration();
@@ -195,7 +198,7 @@ namespace iridium {
     }
     
 
-    std::unique_ptr<AST::Stmt> Parser::varDeclaration(tok::TokType type) {
+    std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
       tok::Token name = consume(tok::TokType::Identifier, "Expected Identifier For Variable!");
       if (hasError) {
         return makeError(errMsg);
@@ -216,12 +219,12 @@ namespace iridium {
           return std::make_unique<AST::Err>("Global Variables require an initializer!", currentLine());
         }
         std::cerr << "Parsed a global var decl of name " << name.getString() << std::endl;
-        return std::make_unique<AST::GlobVarDeclStmt>(name.getString(), ty::from_keyword(type), std::move(initializer));
+        return std::make_unique<AST::GlobVarDeclStmt>(name.getString(), type, std::move(initializer));
       }
 
 
       std::cout << "Parsed a Variable Declaration of name " << name.getString() << std::endl;
-      return std::make_unique<AST::VarDeclStmt>(name.getString(), ty::from_keyword(type), std::move(initializer));
+      return std::make_unique<AST::VarDeclStmt>(name.getString(), type, std::move(initializer));
     }
 
     std::unique_ptr<AST::Stmt> Parser::fnProto() {
@@ -388,13 +391,14 @@ namespace iridium {
     }
 
     std::unique_ptr<AST::Expr> Parser::assignment() {
+      // expr is the identifier
       std::unique_ptr<AST::Expr> expr = orExpr();
 
       if(peek().getTokType() == tok::TokType::Assignment) {
         //consume the '='
         advance();
 
-        // find the value to be assigned to
+        // find the value to assign to the identifier
         std::unique_ptr<AST::Expr> value = assignment();
 
         if(m_Lexer->get(m_CurTok - 2).getTokType() == tok::TokType::Identifier) {

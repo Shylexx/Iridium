@@ -22,7 +22,7 @@ class Codegen : public ASTVisitor {
 public:
   Codegen();
 
-  static const bool OPTIMIZE = false;
+  static const bool OPTIMIZE = true;
 
   void GenUnit(AST::Unit& unit);
   void InitModuleAndFPM();
@@ -61,7 +61,7 @@ private:
   std::unique_ptr<llvm::IRBuilder<>> m_Builder;
   std::unique_ptr<llvm::Module> m_Module;
   std::unique_ptr<llvm::legacy::FunctionPassManager> m_FPM;
-  std::map<std::string, llvm::Value*> m_NamedValues;
+  std::map<std::string, llvm::AllocaInst*> m_NamedValues;
 };
 } // namespace iridium
 

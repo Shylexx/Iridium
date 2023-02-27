@@ -7,6 +7,7 @@
 #include "Parse/AST/Stmt.h"
 #include "Lex/Token.h"
 #include "Parse/AST/Unit.h"
+#include "Parse/Type/Type.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -73,7 +74,7 @@ namespace iridium {
     // Items
     std::unique_ptr<AST::Stmt> fnProto();
     std::unique_ptr<AST::Stmt> fnDefinition();
-    std::unique_ptr<AST::Stmt> varDeclaration(tok::TokType type);
+    std::unique_ptr<AST::Stmt> varDeclaration(ty::Type type);
     std::unique_ptr<AST::Stmt> ifStmt();
 
     std::unique_ptr<AST::Stmt> exprStatement();
