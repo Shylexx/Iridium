@@ -50,6 +50,48 @@ llvm::Value *Codegen::VisitBinaryExpr(const AST::BinaryExpr *expr) {
     return m_Builder->CreateSub(left, right, "subtmp");
   case tok::TokType::Asterisk:
     return m_Builder->CreateMul(left, right, "multmp");
+  case tok::TokType::Equality: {
+      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+	return m_Builder->CreateICmpEQ(left, right, "cmptmp");
+      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+	return m_Builder->CreateFCmpUEQ(left, right, "cmptmp");
+      }
+    }
+  case tok::TokType::NotEquality: {
+      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+	return m_Builder->CreateICmpNE(left, right, "cmptmp");
+      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+	return m_Builder->CreateFCmpUNE(left, right, "cmptmp");
+      }
+    }
+  case tok::TokType::LessThan: {
+      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+	return m_Builder->CreateICmpSLT(left, right, "cmptmp");
+      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+	return m_Builder->CreateFCmpULT(left, right, "cmptmp");
+      }
+    }
+  case tok::TokType::LessOrEqual: {
+      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+	return m_Builder->CreateICmpSLE(left, right, "cmptmp");
+      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+	return m_Builder->CreateFCmpULE(left, right, "cmptmp");
+      }
+    }
+  case tok::TokType::GreaterThan: {
+      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+	return m_Builder->CreateICmpSGT(left, right, "cmptmp");
+      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+	return m_Builder->CreateFCmpUGT(left, right, "cmptmp");
+      }
+    }
+  case tok::TokType::GreaterOrEqual: {
+      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+	return m_Builder->CreateICmpSGE(left, right, "cmptmp");
+      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+	return m_Builder->CreateFCmpUGE(left, right, "cmptmp");
+      }
+    }
   default:
     return GenError("Invalid Binary Operator"); // RETURN ERROR TODO
   }
@@ -69,47 +111,6 @@ llvm::Value* Codegen::VisitVarExpr(const AST::VarExpr *expr) {
   if(!V)
     GenError("Unknown Variable Name");
   return V;
-}
-
-llvm::Value* Codegen::VisitIfExpr(const AST::IfExpr *expr) {
-  if (expr->Cond->retType != ty::Type::Ty_Bool)
-    return GenError("Condition passed to if statement does not resolve to true or false");
-
-  llvm::Value* CondV = expr->Cond->Accept(this);
-  if (!CondV)
-    return GenError("Invalid Condition passed to If Statement!");
-
-  llvm::Function* parent = m_Builder->GetInsertBlock()->getParent();
-  llvm::BasicBlock* ThenBlock = llvm::BasicBlock::Create(*m_Context, "then", parent);
-  llvm::BasicBlock* ElseBlock = llvm::BasicBlock::Create(*m_Context, "else");
-  llvm::BasicBlock* MergeBlock = llvm::BasicBlock::Create(*m_Context, "ifcont");
-
-  m_Builder->CreateCondBr(CondV, ThenBlock, ElseBlock);
-
-  m_Builder->SetInsertPoint(ThenBlock);
-  stmt->Then->Accept(this);
-
-  m_Builder->CreateBr(MergeBlock);
-  // codegen of 'then' can change curent block, update it to for the PHI
-  ThenBlock = m_Builder->GetInsertBlock();
-
-  // else block
-  parent->getBasicBlockList().push_back(ElseBlock);
-  m_Builder->SetInsertPoint(ElseBlock);
-
-  stmt->Else->Accept(this);
-
-  m_Builder->CreateBr(MergeBlock);
-  ElseBlock = m_Builder->GetInsertBlock();
-
-  // Emit merge block
-  parent->getBasicBlockList().push_back(MergeBlock);
-  m_Builder->SetInsertPoint(MergeBlock);
-  llvm::PHINode* phiNode = 
-    m_Builder->CreatePHI(llvm::Type::getDoubleTy(*m_Context), 2, "iftmp");
-  phiNode->addIncoming(ThenV, ThenBlock);
-  phiNode->addIncoming(ElseV, ElseBlock);
-  return phiNode;
 }
 
 llvm::Value* Codegen::VisitAssignExpr(const AST::AssignExpr *expr) {

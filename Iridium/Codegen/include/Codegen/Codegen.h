@@ -33,6 +33,7 @@ public:
   void VisitFnStmt(const AST::FnStmt *stmt) override; // TODO
   void VisitVarDeclStmt(const AST::VarDeclStmt *stmt) override; // TODO
   void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt) override; // TODO
+  void VisitIfStmt(const AST::IfStmt *stmt) override; // TODO
   void VisitErrStmt(const AST::Err* stmt) override; // TODO
   void VisitBlockStmt(const AST::BlockStmt *expr) override; // TODO
 
@@ -42,7 +43,6 @@ public:
   llvm::Value* VisitBinaryExpr(const AST::BinaryExpr* expr) override;
   llvm::Value *VisitBoolExpr(const AST::BoolExpr *expr) override;
   llvm::Value *VisitCallExpr(const AST::CallExpr *expr) override;
-  llvm::Value* VisitIfExpr(const AST::IfExpr *expr) override; // TODO
   llvm::Value *VisitReturnExpr(const AST::ReturnExpr *expr) override;
   llvm::Value *VisitVarExpr(const AST::VarExpr *expr) override;
   llvm::Value *VisitErrExpr(const AST::ErrExpr *expr) override;

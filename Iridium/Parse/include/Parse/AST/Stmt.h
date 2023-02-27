@@ -105,10 +105,33 @@ private:
   NodeType nodeType = NodeType::GlobVarDeclNode;
 };
 
+class IfStmt : public Stmt {
+public:
+  IfStmt(
+      std::unique_ptr<Expr> Cond,
+      std::unique_ptr<Stmt> Then,
+      std::unique_ptr<Stmt> Else)
+    : Cond(std::move(Cond)), Then(std::move(Then)), Else(std::move(Else)) {}
+  ~IfStmt() override {}
+
+  IfStmt(
+      std::unique_ptr<Expr> Cond,
+      std::unique_ptr<Stmt> Then)
+    : Cond(std::move(Cond)), Then(std::move(Then)), Else(nullptr) {}
+
+  void Accept(ASTVisitor* visitor) const override {
+	  visitor->VisitIfStmt(this);
+  }
+
+  std::unique_ptr<Expr> Cond;
+  std::unique_ptr<Stmt> Then;
+  std::unique_ptr<Stmt> Else;
+};
 class BlockStmt : public Stmt {
 public:
   ~BlockStmt() override {}
-  BlockStmt(std::vector<std::unique_ptr<Stmt>> body, ty::Type type) : body(std::move(body))  {}
+  BlockStmt(std::vector<std::unique_ptr<Stmt>> body) : body(std::move(body))  {}
+  BlockStmt() {};
   void Accept(ASTVisitor* visitor) const override {
     return visitor->VisitBlockStmt(this);
   }

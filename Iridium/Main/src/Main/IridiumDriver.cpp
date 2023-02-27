@@ -5,6 +5,7 @@
 
 namespace iridium {
   void Driver::CompileFile(const std::string &path) {
+    m_Codegen.InitModuleAndFPM();
     std::string source = ReadFileToString(path);
     std::cerr << "Parsing File of name: " << path << std::endl;
     std::cerr << source << std::endl;

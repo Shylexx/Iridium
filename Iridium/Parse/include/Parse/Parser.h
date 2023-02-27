@@ -74,6 +74,7 @@ namespace iridium {
     std::unique_ptr<AST::Stmt> fnProto();
     std::unique_ptr<AST::Stmt> fnDefinition();
     std::unique_ptr<AST::Stmt> varDeclaration(tok::TokType type);
+    std::unique_ptr<AST::Stmt> ifStmt();
 
     std::unique_ptr<AST::Stmt> exprStatement();
 
@@ -92,7 +93,6 @@ namespace iridium {
     // parses function calls and variable names
     std::unique_ptr<AST::Expr> identifier();
     // parses if expressions
-    std::unique_ptr<AST::Expr> ifExpr();
     // parses blocks
 
 

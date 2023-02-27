@@ -102,31 +102,6 @@ public:
   std::vector<std::unique_ptr<Expr>> Args;
 };
 
-class IfExpr : public Expr {
-public:
-  IfExpr(
-      std::unique_ptr<Expr> Cond,
-      std::unique_ptr<Stmt> Then,
-      std::unique_ptr<Stmt> Else,
-      ty::Type type = ty::Type::Ty_Void)
-    : Cond(std::move(Cond)), Then(std::move(Then)), Else(std::move(Else)), Expr(type) {}
-  ~IfExpr() override {}
-
-  IfExpr(
-      std::unique_ptr<Expr> Cond,
-      std::unique_ptr<Stmt> Then,
-      ty::Type type = ty::Type::Ty_Void)
-    : Cond(std::move(Cond)), Then(std::move(Then)), Else(nullptr), Expr(type) {}
-
-  llvm::Value* Accept(ASTVisitor* visitor) const override {
-	  return visitor->VisitIfExpr(this);
-  }
-
-  std::unique_ptr<Expr> Cond;
-  std::unique_ptr<Stmt> Then;
-  std::unique_ptr<Stmt> Else;
-};
-
 class ReturnExpr : public Expr {
 public:
   ~ReturnExpr() override {}

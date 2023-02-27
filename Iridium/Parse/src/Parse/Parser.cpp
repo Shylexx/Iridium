@@ -113,6 +113,10 @@ namespace iridium {
         return whileStatement();
       }
 
+      if(match(tok::TokType::If)) {
+        return ifStmt();
+      }
+
       return exprStatement();
     }
 
@@ -306,17 +310,17 @@ namespace iridium {
       return std::make_unique<AST::FnStmt>(std::move(proto), std::move(body));
     }
 
-    std::unique_ptr<AST::Expr> Parser::ifExpr() {
+    std::unique_ptr<AST::Stmt> Parser::ifStmt() {
       auto condition = expression();
       if (!condition) {
-        return std::make_unique<AST::ErrExpr>("Error parsing condition for if statement");
+        return std::make_unique<AST::Err>("Error parsing condition for if statement");
       }
 
       consume(tok::TokType::OpenBrace, "Expected '{' at start of if statement's 'then' block");
 
       auto then = blockStmt();
       if (!then) {
-        return std::make_unique<AST::ErrExpr>("Error parsing 'then' block of if statement");
+        return std::make_unique<AST::Err>("Error parsing 'then' block of if statement");
       }
 
       std::unique_ptr<AST::BlockStmt> elseBlock = std::make_unique<AST::BlockStmt>();
@@ -324,11 +328,11 @@ namespace iridium {
         consume(tok::TokType::OpenBrace, "Expected open brace at start of else branch");
         std::unique_ptr<AST::Stmt> elseBlock = blockStmt();
         if(!elseBlock) {
-          return std::make_unique<AST::ErrExpr>("Error parsing 'else' block of if statement");
+          return std::make_unique<AST::Err>("Error parsing 'else' block of if statement");
         }
-        return std::make_unique<AST::IfExpr>(std::move(condition), std::move(then), std::move(elseBlock), ty::Type::Ty_Void);
+        return std::make_unique<AST::IfStmt>(std::move(condition), std::move(then), std::move(elseBlock));
       }
-      return std::make_unique<AST::IfExpr>(std::move(condition), std::move(then), std::move(elseBlock), ty::Type::Ty_Void);
+      return std::make_unique<AST::IfStmt>(std::move(condition), std::move(then), std::move(elseBlock));
     }
 
     std::unique_ptr<AST::Expr> Parser::returnExpr() {
@@ -370,9 +374,6 @@ namespace iridium {
       switch(advance().getTokType()) {
         case tok::TokType::Return: 
           expr = returnExpr();
-          break;
-        case tok::TokType::If:
-          expr = ifExpr();
           break;
         default:
           expr = expression();
@@ -453,7 +454,7 @@ namespace iridium {
         tok::TokType op = previous().getTokType();
         std::unique_ptr<AST::Expr> rhs = term();
         if(expr->retType == rhs->retType) {
-          expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs), expr->retType);
+          expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr), std::move(rhs), ty::Type::Ty_Bool);
         } else {
           std::cerr << "Mismatched types in binary expression" << std::endl;
           return std::make_unique<AST::ErrExpr>("Mismatched types in binary expression", currentLine());
@@ -639,7 +640,7 @@ namespace iridium {
       }
       // Return to the higher scope
       m_ScopeIndex -= 1;
-      return std::make_unique<AST::BlockStmt>(std::move(stmts), ty::Type::Ty_Void);
+      return std::make_unique<AST::BlockStmt>(std::move(stmts));
     }
     
     void Parser::printSyntaxErrs() {
