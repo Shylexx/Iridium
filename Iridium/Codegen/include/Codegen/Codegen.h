@@ -26,6 +26,7 @@ public:
 
   void GenUnit(AST::Unit& unit);
   void InitModuleAndFPM();
+  void Optimize();
   void PrintIR();
   // statements
   void VisitExprStmt(const AST::ExprStmt *stmt) override; // TODO
@@ -62,6 +63,8 @@ private:
   std::unique_ptr<llvm::Module> m_Module;
   std::unique_ptr<llvm::legacy::FunctionPassManager> m_FPM;
   std::map<std::string, llvm::AllocaInst*> m_NamedValues;
+  llvm::Function* m_CurFunc{};
+  std::unordered_map<const AST::Stmt*, llvm::Function*> m_FuncMap;
 };
 } // namespace iridium
 

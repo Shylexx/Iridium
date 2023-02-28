@@ -31,8 +31,19 @@ namespace iridium {
     m_Builder = std::unique_ptr<llvm::IRBuilder<>>(new llvm::IRBuilder<>(*m_Context));
 
     m_FPM = std::make_unique<llvm::legacy::FunctionPassManager>(m_Module.get());
-
+    
     /*
+    m_FPM->add(llvm::createPromoteMemoryToRegisterPass());
+    m_FPM->add(llvm::createInstructionCombiningPass());
+    m_FPM->add(llvm::createReassociatePass());
+    m_FPM->add(llvm::createGVNPass());
+    m_FPM->add(llvm::createCFGSimplificationPass());
+
+    m_FPM->doInitialization();
+    */
+  }
+
+  void Codegen::Optimize() {
     llvm::LoopAnalysisManager lam;
     llvm::FunctionAnalysisManager fam;
     llvm::CGSCCAnalysisManager cgam;
@@ -56,15 +67,6 @@ namespace iridium {
     mpm = passBuilder.buildO0DefaultPipeline(llvm::OptimizationLevel::O0);
 
     mpm.run(*m_Module, mam);
-    */
-    
-    m_FPM->add(llvm::createPromoteMemoryToRegisterPass());
-    m_FPM->add(llvm::createInstructionCombiningPass());
-    m_FPM->add(llvm::createReassociatePass());
-    m_FPM->add(llvm::createGVNPass());
-    m_FPM->add(llvm::createCFGSimplificationPass());
-
-    m_FPM->doInitialization();
   }
 
   void Codegen::PrintIR() {

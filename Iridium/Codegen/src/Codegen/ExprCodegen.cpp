@@ -43,6 +43,8 @@ llvm::Value *Codegen::VisitBinaryExpr(const AST::BinaryExpr *expr) {
     return nullptr;
   }
 
+  std::cerr << "binexpr lhs type: " << ty::to_string(expr->LHS->retType) << " rhs type: " << ty::to_string(expr->RHS->retType) << std::endl; 
+
   switch (expr->op) {
   case tok::TokType::Plus:
     return m_Builder->CreateAdd(left, right, "addtmp");
@@ -66,6 +68,20 @@ llvm::Value *Codegen::VisitBinaryExpr(const AST::BinaryExpr *expr) {
     }
   case tok::TokType::LessThan: {
       if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+	std::cout<<"types"<<std::endl;
+
+	std::string type_str;
+	llvm::raw_string_ostream rso(type_str);
+	left->getType()->print(rso);
+	std::cout<<rso.str() << std::endl;
+
+	std::string rhs_str;
+	llvm::raw_string_ostream rso_rhs(rhs_str);
+	right->getType()->print(rso_rhs);
+	std::cout<<rso_rhs.str() << std::endl;
+
+	std::cout<<"types over" <<std::endl;
+
 	return m_Builder->CreateICmpSLT(left, right, "cmptmp");
       } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
 	return m_Builder->CreateFCmpULT(left, right, "cmptmp");
@@ -107,10 +123,10 @@ llvm::Value* Codegen::VisitErrExpr(const AST::ErrExpr *expr) {
 }
 
 llvm::Value* Codegen::VisitVarExpr(const AST::VarExpr *expr) {
-  llvm::Value* V = m_NamedValues[expr->Iden];
-  if(!V)
+  llvm::AllocaInst* A = m_NamedValues[expr->Iden];
+  if(!A)
     GenError("Unknown Variable Name");
-  return V;
+  return m_Builder->CreateLoad(A->getAllocatedType(), A, expr->Iden.c_str());
 }
 
 llvm::Value* Codegen::VisitAssignExpr(const AST::AssignExpr *expr) {

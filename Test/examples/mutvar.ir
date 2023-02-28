@@ -3,4 +3,8 @@ fn mutvar(test: i32) -> i32 {
   if test < 4 {
     return myVar - 5;
   }
+  if test < 10 {
+	  myVar = 3;
+  }
+  return myVar;
 }

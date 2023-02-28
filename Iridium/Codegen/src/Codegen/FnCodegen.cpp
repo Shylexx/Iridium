@@ -20,17 +20,21 @@ namespace iridium {
 
 	std::vector<llvm::Type*> types;
 	for(int i = 0; i < prototype->params.size(); i++) {
+	    std::cerr << ty::to_string(prototype->params[i].second) << std::endl;
 	    types.push_back(from_Ty(prototype->params[i].second));
 	}
 
 	llvm::FunctionType* FType = llvm::FunctionType::get(from_Ty(prototype->retType), types, false);
 
 	llvm::Function* func = llvm::Function::Create(FType, llvm::Function::ExternalLinkage, prototype->name, *m_Module);
+	m_CurFunc = func;
+	m_FuncMap[stmt] = m_CurFunc;
 
 	// make names for args
 	unsigned Idx = 0;
 	for (auto& Arg: func->args())
-	    Arg.setName(prototype->params[Idx++].first.getString());
+	    std::cerr << prototype->params[Idx++].first.getString() << std::endl;
+	    //Arg.setName(prototype->params[Idx++].first.getString());
 
 	// Function Definition
 
@@ -50,25 +54,8 @@ namespace iridium {
 	    m_NamedValues[stmt->Proto->params[i].first.getString()] = alloca;
 	    m_Builder->CreateStore(func->getArg(i), alloca);
 	}
-	/*
-	for(auto& Arg : func->args()) {
-	    int paramNo = Arg.getArgNo();
-	    std::string argName = stmt->params[paramNo].first.getString();
-	    llvm::Type* argType = func->getFunctionType()->getParamType(paramNo);
-	    m_NamedValues[argName] = m_Builder->CreateAlloca(argType, nullptr, llvm::Twine(argName));
-	    m_Builder->CreateStore(&Arg, m_NamedValues[argName]);
-	}
-	*/
-
-	/*
-	for(auto& bodyStmt : stmt->body) {
-	    std::cerr << "generating body statement" << std::endl;
-	    bodyStmt->Accept(this);
-	}
-	*/
 
 	stmt->body->Accept(this);
-
 
 	// Return type
 	// if no return statement, return Void
@@ -79,7 +66,9 @@ namespace iridium {
 
 	llvm::verifyFunction(*func);
 
+	/*
 	if(OPTIMIZE)
 	    m_FPM->run(*func);
+	*/
     }
 }

@@ -15,7 +15,7 @@ namespace AST {
   class Unit {
   public:
     std::unordered_map<std::string, std::unique_ptr<AST::ProtoStmt>> m_Functions;
-    std::unordered_map<std::string, AST::GlobVarDeclStmt*> m_Vars;
+    std::unordered_map<std::string, ty::Type> m_Vars;
     std::vector<std::unique_ptr<AST::Stmt>> m_Items;
     std::vector<std::unique_ptr<AST::Stmt>> m_ProtoErrors;
     void protoErrMessage();

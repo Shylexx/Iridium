@@ -12,11 +12,10 @@ namespace iridium {
   }
 
   void Codegen::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
-    std::vector<llvm::AllocaInst*> OldBindings;
-    llvm::Function* func = m_Builder->GetInsertBlock()->getParent();
+    llvm::IRBuilder<> temp(&m_CurFunc->getEntryBlock());
 
     // register variable and emit initializer
-    llvm::AllocaInst* alloca = m_Builder->CreateAlloca(from_Ty(stmt->m_Initializer->retType));
+    llvm::AllocaInst* alloca = temp.CreateAlloca(from_Ty(stmt->m_Initializer->retType));
     llvm::Value* initialValue;
     if(stmt->m_Initializer) {
       initialValue = stmt->m_Initializer->Accept(this);

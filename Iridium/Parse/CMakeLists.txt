@@ -24,6 +24,7 @@ target_link_libraries(IridiumParse
   LLVMAnalysis
   LLVMTarget
   LLVMAsmPrinter
+  LLVMPasses
   LLVMMC
   LLVMCodeGen
   LLVMAnalysis
