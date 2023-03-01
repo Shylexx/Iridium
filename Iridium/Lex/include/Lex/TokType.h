@@ -37,16 +37,14 @@ namespace iridium {
       i32KW,
       f64KW,
       f32KW,
-      StringKW,
       BoolKW,
+      CharKW,
     
       // Literals
       Bool,
-      i64,
-      i32,
-      f64,
-      f32,
-      String,
+      Integer,
+      Float,
+      Char,
 
       // Logical Operators
       Logical_OR,
