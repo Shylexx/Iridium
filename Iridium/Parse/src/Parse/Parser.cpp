@@ -92,9 +92,11 @@ std::unique_ptr<AST::Stmt> Parser::declaration() {
     if (match(tok::TokType::BoolKW)) {
       return varDeclaration(ty::Type::Ty_Bool);
     }
+    /*
     if (match(tok::TokType::StringKW)) {
       return varDeclaration(ty::Type::Ty_Void);
     }
+    */
     // if(match(tok::TokType::Struct)) {
     //   return structDeclaration();
     // }
@@ -154,7 +156,7 @@ tok::Token Parser::consume(tok::TokType type, std::string errMessage) {
 }
 
 tok::Token Parser::consumeTy(std::string errMessage) {
-  if (check(tok::TokType::StringKW) || check(tok::TokType::i64KW) ||
+  if (check(tok::TokType::i64KW) ||
       check(tok::TokType::i32KW) || check(tok::TokType::f64KW) ||
       check(tok::TokType::f32KW) || check(tok::TokType::BoolKW)) {
     return advance();
@@ -594,13 +596,10 @@ std::unique_ptr<AST::Expr> Parser::unary() {
 std::unique_ptr<AST::Expr> Parser::primary() {
   tok::Token primary = advance();
   switch (primary.getTokType()) {
-  case tok::TokType::i64:
+  case tok::TokType::Integer:
     std::cerr << "Parsed an integer" << std::endl;
     return std::make_unique<AST::IntExpr>(primary.geti64(), ty::Type::Ty_i64);
-  case tok::TokType::i32:
-    std::cerr << "Parsed an integer" << std::endl;
-    return std::make_unique<AST::IntExpr>(primary.geti64(), ty::Type::Ty_i32);
-  case tok::TokType::f64:
+  case tok::TokType::Float:
     // std::cerr << "Parsed a float" << std::endl;
     return std::make_unique<AST::FloatExpr>(primary.getf64(), ty::Type::Ty_f64);
   case tok::TokType::Identifier:

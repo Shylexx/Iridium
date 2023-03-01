@@ -45,7 +45,7 @@ namespace iridium {
 
     tok::Token lexNumber();
     tok::Token lexIdentifier();
-    tok::Token lexString();
+    //tok::Token lexString();
     tok::TokType stringToTokType(const std::string& str);
 
     // Returns the amount of lexemes the current token is long

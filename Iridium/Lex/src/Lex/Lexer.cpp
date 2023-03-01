@@ -80,8 +80,6 @@ namespace iridium {
         return match('=') ? addToken(tok::Token(1, tok::TokType::LessOrEqual)) : addToken(tok::Token(1, tok::TokType::LessThan));
       case '>':
         return match('=') ? addToken(tok::Token(1, tok::TokType::GreaterOrEqual)) : addToken(tok::Token(1, tok::TokType::GreaterThan));
-      case '"':
-        return lexString();
     }
 
     std::string errorMessage = std::string("Unrecognised character '") + nextChar + "'";
@@ -186,12 +184,12 @@ namespace iridium {
           advance();
         }
         numString = m_SourceCode.substr(m_TokenStartIndex, currentTokenLength());
-        return addToken(tok::Token(currentTokenLength(), tok::TokType::f64, std::stod(numString)));
+        return addToken(tok::Token(currentTokenLength(), tok::TokType::Float, std::stod(numString)));
     }
 
     // If no decimal point found, return integer
     numString = m_SourceCode.substr(m_TokenStartIndex, currentTokenLength());
-    return addToken(tok::Token(currentTokenLength(), tok::TokType::i32, (int64_t)std::stol(numString)));
+    return addToken(tok::Token(currentTokenLength(), tok::TokType::Integer, (int64_t)std::stol(numString)));
   }
 
   tok::Token Lexer::lexIdentifier() {
@@ -277,6 +275,7 @@ namespace iridium {
     }
   }
 
+  /*
   tok::Token Lexer::lexString() {
     // Save the string's start line in case of error
     int stringStartLine = m_CurrentLine;
@@ -297,6 +296,7 @@ namespace iridium {
     advance();
     return addToken(tok::Token(currentTokenLength(), tok::TokType::String, m_SourceCode.substr(m_TokenStartIndex + 1, currentTokenLength() - 1)));
   }
+  */
 
   int Lexer::currentTokenLength() {
     return m_SourceIndex - m_TokenStartIndex;
@@ -375,9 +375,11 @@ namespace iridium {
       else if (str == "return") {
         return tok::TokType::Return;
       }
+      /*
       else if (str == "String") {
         return tok::TokType::StringKW;
       }
+      */
       else {
         return tok::TokType::Identifier;
       }
@@ -445,18 +447,17 @@ namespace iridium {
       case tok::TokType::f32KW:
         type = "TOK::f32KW";
         break;
+        /*
       case tok::TokType::StringKW:
         type = "TOK::STRINGKW";
         break;
+        */
       // Literals
-      case tok::TokType::i64:
-        type = "TOK::i64: " + std::to_string(token.geti64());
+      case tok::TokType::Integer:
+        type = "TOK::INT: " + std::to_string(token.geti64());
         break;
-      case tok::TokType::f64:
-        type = "TOK::f64: " + std::to_string(token.getf64());
-        break;
-      case tok::TokType::String:
-        type = "TOK::STRING: " + token.getString();
+      case tok::TokType::Float:
+        type = "TOK::FLOAT: " + std::to_string(token.getf64());
         break;
       // Punctuators
       case tok::TokType::Period:
