@@ -8,6 +8,7 @@ add_library(IridiumParse STATIC
   src/Parse/AST/Unit.cpp
   src/Parse/AST/NodeType.cpp
   src/Parse/Type/Type.cpp
+  src/Parse/Type/Context.cpp
 )
 
 target_include_directories(IridiumParse

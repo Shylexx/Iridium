@@ -3,6 +3,7 @@
 
 #include "Parse/AST/Stmt.h"
 #include "Parse/AST/Expr.h"
+#include "Parse/Type/Context.h"
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -15,7 +16,6 @@ namespace AST {
   class Unit {
   public:
     std::unordered_map<std::string, std::unique_ptr<AST::ProtoStmt>> m_Functions;
-    std::unordered_map<std::string, ty::Type> m_Vars;
     std::vector<std::unique_ptr<AST::Stmt>> m_Items;
     std::vector<std::unique_ptr<AST::Stmt>> m_ProtoErrors;
     void protoErrMessage();
@@ -25,6 +25,7 @@ namespace AST {
     void prettyPrint();
     bool error();
     void errMessage();
+    ty::Context m_Context;
   };
 }
 }
