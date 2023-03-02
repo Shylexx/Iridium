@@ -18,9 +18,11 @@ class Stmt {
 public:
   virtual ~Stmt() {}
   virtual void Accept(ASTVisitor* visitor) const = 0;
-  NodeType node() { return nodeType; }
+  NodeType node() const { return nodeType; }
+  virtual bool isExpr() const { return m_IsExpr; }
 private:
   NodeType nodeType = NodeType::None;
+  bool m_IsExpr = false;
 };
 
 class Err : public Stmt {
@@ -155,8 +157,10 @@ public:
 	  visitor->VisitExprStmt(this);
   }
 
+  bool isExpr() const override { return m_IsExpr; }
 private:
   NodeType nodeType = NodeType::ExprStmtNode;
+  bool m_IsExpr = false;
 };
 } // namespace AST
 } // namespace iridium
