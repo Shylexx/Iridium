@@ -3,6 +3,7 @@
 
 #include "Lex/Token.h"
 #include "Parse/AST/ASTVisitor.h"
+#include "Parse/Type/Context.h"
 #include "Parse/AST/Expr.h"
 #include "Parse/AST/NodeType.h"
 #include "Parse/Type/Type.h"
@@ -18,6 +19,7 @@ class Stmt {
 public:
   virtual ~Stmt() {}
   virtual void Accept(ASTVisitor* visitor) const = 0;
+  virtual ty::Type tyCheck(ty::Context* context) const = 0;
   NodeType node() const { return nodeType; }
   virtual bool isExpr() const { return m_IsExpr; }
 private:
@@ -32,6 +34,9 @@ public:
   Err(std::string message, int line) : m_Message(message), m_SourceLine(line) {}
   void Accept(ASTVisitor* visitor) const override {
 	  visitor->VisitErrStmt(this);
+  }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitErrStmt(this);
   }
   std::string m_Message;
   int m_SourceLine = 0;
@@ -49,6 +54,10 @@ public:
 
   void Accept(ASTVisitor* visitor) const override {
 	  visitor->VisitProtoStmt(this);
+  }
+
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitProtoStmt(this);
   }
 
   std::string name;
@@ -69,6 +78,10 @@ public:
 	  visitor->VisitFnStmt(this);
   }
 
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitFnStmt(this);
+  }
+
   std::unique_ptr<ProtoStmt> Proto;
   std::unique_ptr<Stmt> body;
 private:
@@ -82,6 +95,10 @@ public:
   
   void Accept(ASTVisitor* visitor) const override {
 	  visitor->VisitVarDeclStmt(this);
+  }
+
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitVarDeclStmt(this);
   }
 
   ty::Type type;
@@ -98,6 +115,9 @@ public:
   
   void Accept(ASTVisitor* visitor) const override {
 	  visitor->VisitGlobVarDeclStmt(this);
+  }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitGlobVarDeclStmt(this);
   }
 
   ty::Type type;
@@ -125,6 +145,10 @@ public:
 	  visitor->VisitIfStmt(this);
   }
 
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitIfStmt(this);
+  }
+
   std::unique_ptr<Expr> Cond;
   std::unique_ptr<Stmt> Then;
   std::unique_ptr<Stmt> Else;
@@ -136,6 +160,9 @@ public:
   BlockStmt() {};
   void Accept(ASTVisitor* visitor) const override {
     return visitor->VisitBlockStmt(this);
+  }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitBlockStmt(this);
   }
 
   std::vector<std::unique_ptr<Stmt>> body;
@@ -155,6 +182,10 @@ public:
 
   void Accept(ASTVisitor* visitor) const override {
 	  visitor->VisitExprStmt(this);
+  }
+
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitExprStmt(this);
   }
 
   bool isExpr() const override { return m_IsExpr; }

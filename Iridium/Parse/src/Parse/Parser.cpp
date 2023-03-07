@@ -37,6 +37,13 @@ bool Parser::ParseFile(const std::string &source) {
       m_CurUnit.errMessage();
       return false;
     }
+    auto typeErrors = m_CurUnit.m_Context.CheckFn(static_cast<AST::FnStmt*>(m_CurUnit.m_Items.back().get()));
+    if(typeErrors.has_value()) {
+      for(auto& err : typeErrors.value()) {
+        std::cerr << "Type Error: " << err << std::endl;
+      }
+      return false;
+    }
   }
 
   return true;
@@ -186,6 +193,7 @@ tok::Token Parser::peek() { return m_Lexer->get(m_CurTok); }
 bool Parser::atEnd() { return peek().getTokType() == tok::TokType::EndOfFile; }
 
 std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
+  std::cerr << "Var declaration" << std::endl;
   tok::Token name =
       consume(tok::TokType::Identifier, "Expected Identifier For Variable!");
   if (hasError) {
@@ -196,15 +204,18 @@ std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
     return makeError("Redefinition of variable with name " + name.getString());
   }
 
+  std::cerr << "parsing var initializer" << std::endl;
   std::unique_ptr<AST::Expr> initializer;
   if (match(tok::TokType::Assignment)) {
     initializer = expression();
   }
+  std::cerr << "end of initializer" << std::endl;
 
   consume(tok::TokType::Semicolon, "Expected ';' after variable declaration!");
   if (hasError) {
     return makeError(errMsg);
   }
+
 
   if (m_ScopeIndex < 1) {
     if (!initializer.get()) {
@@ -343,6 +354,7 @@ std::unique_ptr<AST::Stmt> Parser::ifStmt() {
   consume(tok::TokType::OpenBrace,
           "Expected '{' at start of if statement's 'then' block");
 
+  std::cerr << "parsing then block of ifstmt" << std::endl;
   auto then = blockStmt();
   if (!then) {
     return std::make_unique<AST::Err>(
@@ -424,6 +436,7 @@ std::unique_ptr<AST::Expr> Parser::assignment() {
   std::unique_ptr<AST::Expr> expr = orExpr();
 
   if (peek().getTokType() == tok::TokType::Assignment) {
+    std::cerr << "Parsing assignment" << std::endl;
     // consume the '='
     advance();
 
@@ -493,6 +506,8 @@ std::unique_ptr<AST::Expr> Parser::comparison() {
       expr = std::make_unique<AST::BinaryExpr>(
           op, std::move(expr), std::move(rhs), ty::Type::Ty_Bool);
     } else {
+      std::cerr << ty::to_string(expr->retType);
+      std::cerr << ty::to_string(rhs->retType);
       std::cerr << "Mismatched types in binary expression" << std::endl;
       return std::make_unique<AST::ErrExpr>(
           "Mismatched types in binary expression", currentLine());
@@ -598,16 +613,17 @@ std::unique_ptr<AST::Expr> Parser::primary() {
   switch (primary.getTokType()) {
   case tok::TokType::Integer:
     std::cerr << "Parsed an integer" << std::endl;
-    return std::make_unique<AST::IntExpr>(primary.geti64(), ty::Type::Ty_i64);
+    return std::make_unique<AST::IntExpr>(primary.geti64(), ty::Type::Ty_i32);
   case tok::TokType::Float:
     // std::cerr << "Parsed a float" << std::endl;
-    return std::make_unique<AST::FloatExpr>(primary.getf64(), ty::Type::Ty_f64);
+    return std::make_unique<AST::FloatExpr>(primary.getf64(), ty::Type::Ty_f32);
   case tok::TokType::Identifier:
     return identifier();
   case tok::TokType::OpenParen:
     return paren();
   default:
-    return std::make_unique<AST::ErrExpr>("Parser expected an expression",
+    std::cerr << "No primary found:" << tok::TokToString(primary) << std::endl;
+    return std::make_unique<AST::ErrExpr>("Parser expected an expression on line: " + std::to_string(currentLine()),
                                           currentLine());
   }
 }

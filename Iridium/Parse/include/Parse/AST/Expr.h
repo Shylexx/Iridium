@@ -4,6 +4,7 @@
 #include "Lex/TokType.h"
 #include "Parse/Type/Type.h"
 #include "Parse/AST/ASTVisitor.h"
+#include "Parse/Type/Context.h"
 #include "Parse/AST/NodeType.h"
 #include <llvm/IR/Value.h>
 #include <memory>
@@ -28,6 +29,7 @@ public:
   NodeType nodeType = NodeType::Expr;
 
   virtual llvm::Value* Accept(ASTVisitor* visitor) const = 0;
+  virtual ty::Type tyCheck(ty::Context* context) const = 0;
 };
 
 class UnaryExpr : public Expr {
@@ -38,6 +40,10 @@ public:
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitUnaryExpr(this);
+  }
+
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitUnaryExpr(this);
   }
 
   tok::TokType Op;
@@ -53,6 +59,9 @@ public:
   llvm::Value* Accept(ASTVisitor* visitor) const override {
      return visitor->VisitBinaryExpr(this);
   }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitBinaryExpr(this);
+  }
 
   tok::TokType op;
   std::unique_ptr<Expr> LHS;
@@ -65,6 +74,9 @@ public:
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitIntExpr(this);
   }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitIntExpr(this);
+  }
   int Val;
 };
 
@@ -75,6 +87,9 @@ public:
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitFloatExpr(this);
   }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitFloatExpr(this);
+  }
 
   float Val;
 };
@@ -84,6 +99,9 @@ public:
   BoolExpr(bool value, ty::Type type) : Val(value), Expr(type) {}
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitBoolExpr(this);
+  }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitBoolExpr(this);
   }
   bool Val;
 };
@@ -96,6 +114,9 @@ public:
       : Callee(callee), Args(std::move(args)), Expr(type) {}
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitCallExpr(this);
+  }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitCallExpr(this);
   }
 
   std::string Callee;
@@ -113,6 +134,9 @@ public:
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitReturnExpr(this);
   }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitReturnExpr(this);
+  }
 
   std::unique_ptr<Expr> Val;
 };
@@ -128,6 +152,9 @@ public:
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitVarExpr(this);
+  }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitVarExpr(this);
   }
 
 };
@@ -145,6 +172,9 @@ public:
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitAssignExpr(this);
+  }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitAssignExpr(this);
   }
 };
 
@@ -169,6 +199,9 @@ public:
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitLogicalExpr(this);
   }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitLogicalExpr(this);
+  }
 };
 
 class ErrExpr : public Expr {
@@ -182,6 +215,9 @@ public:
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitErrExpr(this);
+  }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitErrExpr(this);
   }
 
   NodeType nodeType = NodeType::ErrorNode;

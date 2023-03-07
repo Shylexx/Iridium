@@ -58,24 +58,12 @@ namespace tok {
       case tok::TokType::f32KW:
         type = "TOK::f32KW";
         break;
-      case tok::TokType::StringKW:
-        type = "TOK::STRINGKW";
-        break;
       // Literals
-      case tok::TokType::i64:
-        type = "TOK::i64: " + std::to_string(token.geti64());
+      case tok::TokType::Integer:
+        type = "TOK::Int: " + std::to_string(token.geti64());
         break;
-      case tok::TokType::i32:
-        type = "TOK::i32: " + std::to_string(token.geti64());
-        break;
-      case tok::TokType::f64:
-        type = "TOK::f64: " + std::to_string(token.getf64());
-        break;
-      case tok::TokType::f32:
-        type = "TOK::f32: " + std::to_string(token.getf64());
-        break;
-      case tok::TokType::String:
-        type = "TOK::STRING: " + token.getString();
+      case tok::TokType::Float:
+        type = "TOK::Float: " + std::to_string(token.getf64());
         break;
       // Punctuators
       case tok::TokType::Period:

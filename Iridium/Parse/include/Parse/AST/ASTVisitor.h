@@ -4,6 +4,9 @@
 #include "llvm/IR/Value.h"
 namespace iridium {
 namespace AST {
+  class Stmt;
+  class Expr;
+
   class ExprStmt;
   class ProtoStmt;
   class FnStmt;
