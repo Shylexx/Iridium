@@ -6,6 +6,7 @@
 #include "Parse/AST/ASTVisitor.h"
 #include "Parse/Type/Context.h"
 #include "Parse/AST/NodeType.h"
+#include <cmath>
 #include <llvm/IR/Value.h>
 #include <memory>
 #include <string>
@@ -15,6 +16,21 @@ namespace iridium {
 namespace AST {
 
 class Stmt;
+
+enum class ExprType {
+  None,
+  Var,
+  Return,
+  Unary,
+  Binary,
+  Int,
+  Float,
+  Bool,
+  Call,
+  Logical,
+  Assign,
+  Err,
+};
 
 
 class Expr {
@@ -30,6 +46,8 @@ public:
 
   virtual llvm::Value* Accept(ASTVisitor* visitor) const = 0;
   virtual ty::Type tyCheck(ty::Context* context) const = 0;
+
+  virtual const ExprType exprType() const { return ExprType::None; }
 };
 
 class UnaryExpr : public Expr {
@@ -45,6 +63,8 @@ public:
   ty::Type tyCheck(ty::Context* context) const override {
     return context->VisitUnaryExpr(this);
   }
+
+  virtual const ExprType exprType() const override { return ExprType::Unary; }
 
   tok::TokType Op;
   std::unique_ptr<Expr> RHS;
@@ -66,6 +86,7 @@ public:
   tok::TokType op;
   std::unique_ptr<Expr> LHS;
   std::unique_ptr<Expr> RHS;
+  virtual const ExprType exprType() const override { return ExprType::Binary; }
 };
 
 class IntExpr : public Expr {
@@ -78,6 +99,7 @@ public:
     return context->VisitIntExpr(this);
   }
   int Val;
+  virtual const ExprType exprType() const override { return ExprType::Int; }
 };
 
 class FloatExpr : public Expr {
@@ -92,6 +114,7 @@ public:
   }
 
   float Val;
+  virtual const ExprType exprType() const override { return ExprType::Float; }
 };
 
 class BoolExpr : public Expr {
@@ -104,6 +127,7 @@ public:
     return context->VisitBoolExpr(this);
   }
   bool Val;
+  virtual const ExprType exprType() const override { return ExprType::Bool; }
 };
 
 
@@ -121,6 +145,7 @@ public:
 
   std::string Callee;
   std::vector<std::unique_ptr<Expr>> Args;
+  virtual const ExprType exprType() const override { return ExprType::Call; }
 };
 
 class ReturnExpr : public Expr {
@@ -139,6 +164,7 @@ public:
   }
 
   std::unique_ptr<Expr> Val;
+  virtual const ExprType exprType() const override { return ExprType::Return; }
 };
 
 class VarExpr : public Expr {
@@ -156,6 +182,7 @@ public:
   ty::Type tyCheck(ty::Context* context) const override {
     return context->VisitVarExpr(this);
   }
+  virtual const ExprType exprType() const override { return ExprType::Var; }
 
 };
 
@@ -176,6 +203,7 @@ public:
   ty::Type tyCheck(ty::Context* context) const override {
     return context->VisitAssignExpr(this);
   }
+  virtual const ExprType exprType() const override { return ExprType::Assign; }
 };
 
 enum class LogicOp {
@@ -202,6 +230,7 @@ public:
   ty::Type tyCheck(ty::Context* context) const override {
     return context->VisitLogicalExpr(this);
   }
+  virtual const ExprType exprType() const override { return ExprType::Logical; }
 };
 
 class ErrExpr : public Expr {
@@ -222,6 +251,7 @@ public:
 
   NodeType nodeType = NodeType::ErrorNode;
   int Line;
+  virtual const ExprType exprType() const override { return ExprType::Err; }
 private:
   std::string Msg = "";
 

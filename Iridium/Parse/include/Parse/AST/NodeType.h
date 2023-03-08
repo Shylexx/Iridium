@@ -7,6 +7,7 @@ namespace AST {
 enum class NodeType {
   None,
   ExprStmtNode,
+  AssignExpr,
   ErrorNode,
   FnProtoNode,
   FnDeclNode,

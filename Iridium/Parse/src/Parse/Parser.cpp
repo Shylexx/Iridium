@@ -351,8 +351,10 @@ std::unique_ptr<AST::Stmt> Parser::ifStmt() {
         "Error parsing condition for if statement");
   }
 
-  consume(tok::TokType::OpenBrace,
+  auto token = consume(tok::TokType::OpenBrace,
           "Expected '{' at start of if statement's 'then' block");
+
+  std::cerr << "tok at start of then block" << tok::TokToString(token) << std::endl;
 
   std::cerr << "parsing then block of ifstmt" << std::endl;
   auto then = blockStmt();
@@ -417,14 +419,18 @@ std::unique_ptr<AST::Stmt> Parser::whileStatement() {
 std::unique_ptr<AST::Stmt> Parser::exprStatement() {
   std::unique_ptr<AST::Expr> expr;
 
-  switch (advance().getTokType()) {
+  switch (peek().getTokType()) {
   case tok::TokType::Return:
+    // consume return keyword
+    advance();
     expr = returnExpr();
     break;
   default:
     expr = expression();
+    consume(tok::TokType::Semicolon, "Expected ';' at end of expression");
     break;
   }
+
 
   return std::make_unique<AST::ExprStmt>(std::move(expr));
 }
@@ -443,11 +449,13 @@ std::unique_ptr<AST::Expr> Parser::assignment() {
     // find the value to assign to the identifier
     std::unique_ptr<AST::Expr> value = assignment();
 
-    if (m_Lexer->get(m_CurTok - 2).getTokType() == tok::TokType::Identifier) {
+    std::cerr << "expr iden: " << static_cast<AST::VarExpr *>(expr.get())->Iden << std::endl;
+    if (expr->exprType() == AST::ExprType::Var) {
       std::string target = static_cast<AST::VarExpr *>(expr.get())->Iden;
       ty::Type type = static_cast<AST::VarExpr *>(expr.get())->retType;
       return std::make_unique<AST::AssignExpr>(target, std::move(value), type);
     } else {
+      std::cerr << "prev tok is: " << tok::TokToString(m_Lexer->get(m_CurTok - 2)) << std::endl;
       return std::make_unique<AST::ErrExpr>(
           "Cannot assign a value to that target", currentLine());
     }
@@ -643,6 +651,7 @@ std::unique_ptr<AST::Expr> Parser::identifier() {
                                             currentLine());
     }
     
+    std::cerr << "Parsed a variable ref: " << name << std::endl;
     return std::make_unique<AST::VarExpr>(name, result->second);
   }
   // otherwise, Function Call
@@ -688,8 +697,11 @@ std::unique_ptr<AST::Expr> Parser::identifier() {
 }
 
 std::unique_ptr<AST::Stmt> Parser::blockStmt() {
+  std::cerr << "started block parsing" << std::endl;
   std::vector<std::unique_ptr<AST::Stmt>> stmts;
   m_ScopeIndex += 1;
+
+  std::cerr << "first tok in block: " << tok::TokToString(m_Lexer->get(m_CurTok)) << std::endl;
 
   while (!check(tok::TokType::CloseBrace) && !atEnd()) {
     stmts.push_back(std::move(declaration()));
@@ -704,6 +716,7 @@ std::unique_ptr<AST::Stmt> Parser::blockStmt() {
   }
   // Return to the higher scope
   m_ScopeIndex -= 1;
+  std::cerr << "finished block parsing" << std::endl;
   return std::make_unique<AST::BlockStmt>(std::move(stmts));
 }
 
