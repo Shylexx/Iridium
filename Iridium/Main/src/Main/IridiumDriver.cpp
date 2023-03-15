@@ -25,4 +25,8 @@ namespace iridium {
 		    (std::istreambuf_iterator<char>()));
     return content;
   }
+
+  bool Driver::WriteToObjectFile() {
+    return true;
+  }
 }

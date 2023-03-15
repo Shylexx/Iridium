@@ -10,6 +10,7 @@ namespace iridium {
 	class Driver {
 	public:
 		void CompileFile(const std::string& path);
+		bool WriteToObjectFile();
 	private:
 		std::string ReadFileToString(const std::string& path);
 

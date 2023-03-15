@@ -1,4 +1,5 @@
 add_executable(IridiumMain
+  src/Main/Sys.cpp
   src/Main/IridiumDriver.cpp
   src/Main/IridiumEntry.cpp
 )
