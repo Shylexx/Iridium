@@ -20,10 +20,9 @@ public:
   virtual ~Stmt() {}
   virtual void Accept(ASTVisitor* visitor) const = 0;
   virtual ty::Type tyCheck(ty::Context* context) const = 0;
-  NodeType node() const { return nodeType; }
+  NodeType node() const { return NodeType::None; }
   virtual bool isExpr() const { return m_IsExpr; }
 private:
-  NodeType nodeType = NodeType::None;
   bool m_IsExpr = false;
 };
 
