@@ -11,7 +11,7 @@
 
 namespace iridium {
 
-void InitObjTargets() {
+void Target::InitObjTargets() {
   llvm::InitializeAllTargetInfos();
   llvm::InitializeAllTargets();
   llvm::InitializeAllTargetMCs();
@@ -19,24 +19,24 @@ void InitObjTargets() {
   llvm::InitializeAllAsmPrinters();
 }
 
-bool SetCurrentTargetMachine() {
-  auto targetTriple = llvm::sys::getDefaultTargetTriple();
+bool Target::SetCurrentTargetMachine() {
+  m_TargetTriple = llvm::sys::getDefaultTargetTriple();
 
   std::string err;
-  auto target = llvm::TargetRegistry::lookupTarget(targetTriple, err);
+  auto target = llvm::TargetRegistry::lookupTarget(m_TargetTriple, err);
   if (!target) {
     llvm::errs() << err;
     return false;
   }
 
-  return true;
 
   auto CPU = "generic";
   auto Features = "";
 
   llvm::TargetOptions opts;
-  auto RM = std::optional<llvm::Reloc::Model>();
-  auto TargetMachine = target->createTargetMachine(targetTriple, CPU, Features, opts, RM);
+  auto RM = llvm::Optional<llvm::Reloc::Model>();
+  m_TargetMachine = target->createTargetMachine(m_TargetTriple, CPU, Features, opts, RM);
+  return true;
 }
 
 }

@@ -56,6 +56,8 @@ public:
     return nullptr;
   }
 
+  llvm::Module* module() const { return m_Module.get(); }
+
 private:
   llvm::Type* from_Ty(ty::Type type);
   std::unique_ptr<llvm::LLVMContext> m_Context;

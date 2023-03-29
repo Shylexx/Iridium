@@ -1,3 +1,8 @@
+
+message("${LLVM_TARGETS_TO_BUILD}")
+
+message("targets in main: ${llvm_targets}")
+
 add_executable(IridiumMain
   src/Main/Sys.cpp
   src/Main/IridiumDriver.cpp
@@ -12,4 +17,5 @@ target_include_directories(IridiumMain
 target_link_libraries(IridiumMain
   PUBLIC
   IridiumCodegen
+  ${llvm_targets}
 )

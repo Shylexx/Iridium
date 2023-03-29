@@ -3,6 +3,7 @@
 
 #include "Codegen/Codegen.h"
 #include "Parse/Parser.h"
+#include "Main/Sys.h"
 #include <string>
 
 
@@ -16,6 +17,7 @@ namespace iridium {
 
 		Parser m_Parser;
 		Codegen m_Codegen;
+		Target m_Target;
 	};
 }
 
