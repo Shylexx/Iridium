@@ -1,9 +1,3 @@
-find_package(LLVM CONFIG REQUIRED)
-llvm_map_components_to_libnames(llvm_targets ${LLVM_TARGETS_TO_BUILD})
-message("targets: ${llvm_targets}")
-
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 add_library(IridiumParse STATIC
   src/Parse/Parser.cpp
