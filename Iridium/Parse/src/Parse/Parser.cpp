@@ -413,7 +413,25 @@ std::unique_ptr<AST::Stmt> Parser::forStatement() {
 
 std::unique_ptr<AST::Stmt> Parser::whileStatement() {
 
-  return std::make_unique<AST::Err>("Unimplemented!");
+  auto condition = expression();
+  if (!condition) {
+    return std::make_unique<AST::Err>(
+        "Error parsing condition for while statement");
+  }
+
+  auto token = consume(tok::TokType::OpenBrace,
+          "Expected '{' at start of while statement's body block");
+
+  std::cerr << "tok at start of while body block" << tok::TokToString(token) << std::endl;
+
+  std::cerr << "parsing then block of while stmt" << std::endl;
+  auto body = blockStmt();
+  if (!body) {
+    return std::make_unique<AST::Err>(
+        "Error parsing body of while statement");
+  }
+
+  return std::make_unique<AST::WhileStmt>(std::move(condition), std::move(body));
 }
 
 std::unique_ptr<AST::Stmt> Parser::exprStatement() {

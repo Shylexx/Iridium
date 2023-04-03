@@ -50,6 +50,8 @@ namespace ty {
 
   // Type check statements
   ty::Type Context::VisitIfStmt(const AST::IfStmt* stmt) { return ty::Type::Ty_Void; }
+
+  ty::Type Context::VisitWhileStmt(const AST::WhileStmt* stmt) { return ty::Type::Ty_Void; }
   
   ty::Type Context::VisitProtoStmt(const AST::ProtoStmt *stmt) { return ty::Type::Ty_Void; }
 

@@ -14,6 +14,7 @@ namespace AST {
   class GlobVarDeclStmt;
   class BlockStmt;
   class IfStmt;
+  class WhileStmt;
   class Err;
 
   class IntExpr;
@@ -40,6 +41,7 @@ namespace AST {
     virtual void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt* stmt) = 0;
     virtual void VisitErrStmt(const AST::Err* stmt) = 0;
     virtual void VisitIfStmt(const AST::IfStmt* stmt) = 0;
+    virtual void VisitWhileStmt(const AST::WhileStmt* stmt) = 0;
     virtual void VisitBlockStmt(const AST::BlockStmt* stmt) = 0;
 
 

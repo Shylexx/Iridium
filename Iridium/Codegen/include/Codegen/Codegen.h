@@ -35,6 +35,7 @@ public:
   void VisitVarDeclStmt(const AST::VarDeclStmt *stmt) override; // TODO
   void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt) override; // TODO
   void VisitIfStmt(const AST::IfStmt *stmt) override; // TODO
+  void VisitWhileStmt(const AST::WhileStmt *stmt) override; // TODO
   void VisitErrStmt(const AST::Err* stmt) override; // TODO
   void VisitBlockStmt(const AST::BlockStmt *expr) override; // TODO
 

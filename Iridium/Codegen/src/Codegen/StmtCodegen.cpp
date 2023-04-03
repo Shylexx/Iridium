@@ -37,6 +37,45 @@ namespace iridium {
     std::cerr << stmt->m_Message << std::endl;
   }
 
+void Codegen::VisitWhileStmt(const AST::WhileStmt *stmt) {
+  if (stmt->Cond->retType != ty::Type::Ty_Bool) {
+    std::cerr << "Condition passed to while statement does not resolve to true or false" << std::endl;
+    std::cerr << "While Stmt condition is of type: " << ty::to_string(stmt->Cond->retType) << std::endl;
+  }
+
+  llvm::Value* CondV = stmt->Cond->Accept(this);
+  if(!CondV) {
+    std::cerr << "Invalid Condition passed to While Statement!" << std::endl;
+  }
+
+  llvm::Function* parentFunction = m_Builder->GetInsertBlock()->getParent();
+
+  llvm::BasicBlock* loopBB = llvm::BasicBlock::Create(*m_Context, "loop");
+  llvm::BasicBlock* loopEndBB = llvm::BasicBlock::Create(*m_Context, "loopend");
+
+  m_Builder->CreateCondBr(CondV, loopBB, loopEndBB);
+
+  // loop block
+  parentFunction->getBasicBlockList().push_back(loopBB);
+  m_Builder->SetInsertPoint(loopBB);
+  
+  stmt->Body->Accept(this);
+
+  CondV = stmt->Cond->Accept(this);
+  if(!CondV) {
+    std::cerr << "Null condition expr for while statement" << std::endl;
+  }
+
+  // recursive codegen calls could change current block
+  loopBB = m_Builder->GetInsertBlock();
+  m_Builder->CreateCondBr(CondV, loopBB, loopEndBB);
+
+  // loop end expr
+  parentFunction->getBasicBlockList().push_back(loopEndBB);
+  m_Builder->SetInsertPoint(loopEndBB);
+
+}
+
 void Codegen::VisitIfStmt(const AST::IfStmt *stmt) {
   if (stmt->Cond->retType != ty::Type::Ty_Bool) {
     std::cerr << "Condition passed to if statement does not resolve to true or false" << std::endl;

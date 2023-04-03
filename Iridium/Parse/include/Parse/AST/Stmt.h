@@ -126,6 +126,27 @@ private:
   NodeType nodeType = NodeType::GlobVarDeclNode;
 };
 
+class WhileStmt : public Stmt {
+public:
+  WhileStmt(
+      std::unique_ptr<Expr> Cond,
+      std::unique_ptr<Stmt> Body)
+    : Cond(std::move(Cond)), Body(std::move(Body)) {}
+
+  ~WhileStmt() override {}
+
+  void Accept(ASTVisitor* visitor) const override {
+	  visitor->VisitWhileStmt(this);
+  }
+
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitWhileStmt(this);
+  }
+
+  std::unique_ptr<Expr> Cond;
+  std::unique_ptr<Stmt> Body;
+};
+
 class IfStmt : public Stmt {
 public:
   IfStmt(
