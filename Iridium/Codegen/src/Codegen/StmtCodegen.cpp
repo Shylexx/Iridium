@@ -96,8 +96,15 @@ void Codegen::VisitIfStmt(const AST::IfStmt *stmt) {
   m_Builder->SetInsertPoint(ThenBlock);
   stmt->Then->Accept(this);
 
-  m_Builder->CreateBr(MergeBlock);
-  // codegen of 'then' can change curent block, update it to for the PHI
+  // do blocks terminate themselves?
+  bool thenTerminates = ThenBlock->back().isTerminator();
+
+
+  if(ThenBlock->size() == 0 || !thenTerminates) {
+    m_Builder->CreateBr(MergeBlock);
+  }
+
+  // codegen of 'then' can change curent block, update it so the new block is below
   ThenBlock = m_Builder->GetInsertBlock();
 
   // else block
@@ -106,11 +113,19 @@ void Codegen::VisitIfStmt(const AST::IfStmt *stmt) {
 
   stmt->Else->Accept(this);
 
-  m_Builder->CreateBr(MergeBlock);
+  bool elseTerminates = ElseBlock->back().isTerminator();
+
+  if(ElseBlock->size() == 0 || !elseTerminates) {
+    m_Builder->CreateBr(MergeBlock);
+  }
+
   ElseBlock = m_Builder->GetInsertBlock();
 
-  // Emit merge block
+  // Emit merge block if neither block terminated themselves
+  if(!thenTerminates && !elseTerminates) {
   parent->getBasicBlockList().push_back(MergeBlock);
   m_Builder->SetInsertPoint(MergeBlock);
+  }
 }
-}
+
+} //namespace iridium
