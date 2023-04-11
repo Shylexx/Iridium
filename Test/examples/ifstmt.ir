@@ -1,6 +1,8 @@
 fn ifexpr() -> i32 {
   if 3 < 4 {
     return 3;
+  } else {
+	return 10;
   }
 }
 
