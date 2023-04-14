@@ -11,7 +11,15 @@
 
 namespace iridium {
     void Codegen::VisitProtoStmt(const AST::ProtoStmt *stmt) {
-	std::cerr << "This should never get visited!" << std::endl;
+	std::vector<llvm::Type*> types;
+	for(int i = 0; i < stmt->params.size(); i++) {
+	    std::cerr << ty::to_string(stmt->params[i].second) << std::endl;
+	    types.push_back(from_Ty(stmt->params[i].second));
+	}
+
+	llvm::FunctionType* FType = llvm::FunctionType::get(from_Ty(stmt->retType), types, false);
+
+	llvm::Function* func = llvm::Function::Create(FType, llvm::Function::ExternalLinkage, stmt->name, *m_Module);
     }
 
     void Codegen::VisitFnStmt(const AST::FnStmt* stmt) {

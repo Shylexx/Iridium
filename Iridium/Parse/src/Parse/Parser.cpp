@@ -102,7 +102,8 @@ std::unique_ptr<AST::Stmt> Parser::declaration() {
   // (Functions are items)
   if (match(tok::TokType::Fn)) {
     return fnDefinition();
-  } else if (match(tok::TokType::Extern)) {
+  } 
+  if (match(tok::TokType::Extern)) {
     if(!match(tok::TokType::Fn)) {
       std::cerr << "Only functions can be declared as extern" << std::endl;
       return std::make_unique<AST::Err>("Only functions can be declared as extern");
@@ -111,7 +112,9 @@ std::unique_ptr<AST::Stmt> Parser::declaration() {
     if (hasError) {
       return std::make_unique<AST::Err>("Error parsing function prototype");
     }
-    std::cerr << "Parsed extern fn" << std::endl;
+    std::cerr << "Parsed extern fn with name: " << static_cast<AST::ProtoStmt*>(prototype.get())->name << std::endl;
+    // consume the semicolon
+    advance();
     return prototype;
   }
   // Only look for other statements if we are not in the global scope (can be a
