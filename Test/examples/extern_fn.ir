@@ -1,0 +1,5 @@
+extern fn putchar(character: i32) -> i32;
+
+fn main() {
+	putchar(71);
+}

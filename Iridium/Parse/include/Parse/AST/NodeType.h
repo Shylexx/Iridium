@@ -10,6 +10,8 @@ enum class NodeType {
   AssignExpr,
   ErrorNode,
   FnProtoNode,
+  BlockStmtNode,
+  WhileStmtNode,
   FnDeclNode,
   VarDeclNode,
   GlobVarDeclNode,

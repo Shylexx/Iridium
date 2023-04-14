@@ -21,6 +21,16 @@ namespace ty {
     }
   }
 
+  std::optional<std::vector<std::string>> Context::CheckProto(
+      const AST::ProtoStmt *fn
+      ) {
+    fn->tyCheck(this);  
+    if(m_TypeErrors.size() > 0) {
+      return m_TypeErrors;
+    } else { return std::nullopt; 
+    }
+  }
+
   std::optional<std::vector<std::string>> Context::CheckFn(
       const AST::FnStmt *fn
       ) {
