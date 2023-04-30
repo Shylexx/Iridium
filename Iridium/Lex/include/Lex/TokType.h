@@ -33,6 +33,7 @@ namespace iridium {
       Static,
 
       // Literal Keywords
+      i8KW,
       i64KW,
       i32KW,
       f64KW,

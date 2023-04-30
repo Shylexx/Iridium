@@ -120,6 +120,9 @@ std::unique_ptr<AST::Stmt> Parser::declaration() {
   // Only look for other statements if we are not in the global scope (can be a
   // function body)
   if (m_ScopeIndex > 0) {
+    if(match(tok::TokType::i8KW)) {
+      return varDeclaration(ty::Type::Ty_i8);
+    }
     if (match(tok::TokType::i64KW)) {
       return varDeclaration(ty::Type::Ty_i64);
     }
