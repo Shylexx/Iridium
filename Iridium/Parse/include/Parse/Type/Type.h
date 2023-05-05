@@ -7,6 +7,7 @@
 namespace iridium {
 namespace ty {
 enum class Type {
+  Ty_i8,
   Ty_i64,
   Ty_i32,
   Ty_f64,

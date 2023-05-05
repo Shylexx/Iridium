@@ -23,6 +23,9 @@ namespace ty {
     std::optional<std::vector<std::string>> CheckFn(
         const AST::FnStmt* fn
         );
+    std::optional<std::vector<std::string>> CheckProto(
+        const AST::ProtoStmt* fn
+        );
     
     // statements
     ty::Type VisitExprStmt(const AST::ExprStmt *stmt); // TODO

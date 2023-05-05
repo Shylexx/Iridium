@@ -20,7 +20,7 @@ public:
   virtual ~Stmt() {}
   virtual void Accept(ASTVisitor* visitor) const = 0;
   virtual ty::Type tyCheck(ty::Context* context) const = 0;
-  NodeType node() const { return NodeType::None; }
+  virtual NodeType node() const = 0;
   virtual bool isExpr() const { return m_IsExpr; }
 private:
   bool m_IsExpr = false;
@@ -39,6 +39,8 @@ public:
   }
   std::string m_Message;
   int m_SourceLine = 0;
+
+  NodeType node() const override { return NodeType::ErrorNode; }
 private:
   NodeType nodeType = NodeType::ErrorNode;
 };
@@ -62,6 +64,8 @@ public:
   std::string name;
   std::vector<std::pair<tok::Token, ty::Type>> params;
   ty::Type retType = ty::Type::Ty_Void;
+  NodeType node() const override { return NodeType::FnProtoNode; }
+
 private:
   NodeType nodeType = NodeType::FnProtoNode;
 };
@@ -81,6 +85,7 @@ public:
     return context->VisitFnStmt(this);
   }
 
+  NodeType node() const override { return NodeType::FnDeclNode; }
   std::unique_ptr<ProtoStmt> Proto;
   std::unique_ptr<Stmt> body;
 private:
@@ -99,6 +104,7 @@ public:
   ty::Type tyCheck(ty::Context* context) const override {
     return context->VisitVarDeclStmt(this);
   }
+  NodeType node() const override { return NodeType::VarDeclNode; }
 
   ty::Type type;
   std::string m_Name;
@@ -118,6 +124,7 @@ public:
   ty::Type tyCheck(ty::Context* context) const override {
     return context->VisitGlobVarDeclStmt(this);
   }
+  NodeType node() const override { return NodeType::GlobVarDeclNode; }
 
   ty::Type type;
   std::string m_Name;
@@ -142,6 +149,7 @@ public:
   ty::Type tyCheck(ty::Context* context) const override {
     return context->VisitWhileStmt(this);
   }
+  NodeType node() const override { return NodeType::WhileStmtNode; }
 
   std::unique_ptr<Expr> Cond;
   std::unique_ptr<Stmt> Body;
@@ -168,6 +176,7 @@ public:
   ty::Type tyCheck(ty::Context* context) const override {
     return context->VisitIfStmt(this);
   }
+  NodeType node() const override { return NodeType::IfStmtNode; }
 
   std::unique_ptr<Expr> Cond;
   std::unique_ptr<Stmt> Then;
@@ -184,6 +193,7 @@ public:
   ty::Type tyCheck(ty::Context* context) const override {
     return context->VisitBlockStmt(this);
   }
+  NodeType node() const override { return NodeType::BlockStmtNode; }
 
   std::vector<std::unique_ptr<Stmt>> body;
 };
@@ -207,6 +217,7 @@ public:
   ty::Type tyCheck(ty::Context* context) const override {
     return context->VisitExprStmt(this);
   }
+  NodeType node() const override { return NodeType::ExprStmtNode; }
 
   bool isExpr() const override { return m_IsExpr; }
 private:

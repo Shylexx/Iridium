@@ -37,9 +37,14 @@ bool Parser::ParseFile(const std::string &source) {
       m_CurUnit.errMessage();
       return false;
     }
-    auto typeErrors = m_CurUnit.m_Context.CheckFn(static_cast<AST::FnStmt*>(m_CurUnit.m_Items.back().get()));
-    if(typeErrors.has_value()) {
-      for(auto& err : typeErrors.value()) {
+    std::optional<std::vector<std::string>> tyErrors;
+    if(m_CurUnit.m_Items.back()->node() == AST::NodeType::FnProtoNode) {
+      tyErrors = m_CurUnit.m_Context.CheckProto(static_cast<AST::ProtoStmt*>(m_CurUnit.m_Items.back().get()));
+    } else {
+      tyErrors = m_CurUnit.m_Context.CheckFn(static_cast<AST::FnStmt*>(m_CurUnit.m_Items.back().get()));
+    }
+    if(tyErrors.has_value()) {
+      for(auto& err : tyErrors.value()) {
         std::cerr << "Type Error: " << err << std::endl;
       }
       return false;
@@ -68,6 +73,23 @@ bool Parser::ResolveItems() {
         // m_CurUnit.protoErrMessage();
         return false;
       }
+    } else if(match(tok::TokType::Extern)) {
+      // consume the 'extern'
+      advance();
+      std::unique_ptr<AST::Stmt> proto = fnProto();
+      if (auto err = dynamic_cast<AST::Err *>(proto.get())) {
+        std::cerr << "Error parsing function prototype!" << std::endl;
+        std::cerr << "Syntax Error on line [" << err->m_SourceLine
+                  << "]: " << err->m_Message << std::endl;
+        return false;
+      }
+      std::unique_ptr<AST::ProtoStmt> casted(
+          static_cast<AST::ProtoStmt *>(proto.release()));
+      if (!m_CurUnit.addProto(std::move(casted))) {
+        std::cerr << "Cannot Redefine Existing Function!" << std::endl;
+        // m_CurUnit.protoErrMessage();
+        return false;
+      }
     }
     advance();
   }
@@ -80,10 +102,27 @@ std::unique_ptr<AST::Stmt> Parser::declaration() {
   // (Functions are items)
   if (match(tok::TokType::Fn)) {
     return fnDefinition();
+  } 
+  if (match(tok::TokType::Extern)) {
+    if(!match(tok::TokType::Fn)) {
+      std::cerr << "Only functions can be declared as extern" << std::endl;
+      return std::make_unique<AST::Err>("Only functions can be declared as extern");
+    }
+    std::unique_ptr<AST::Stmt> prototype = fnProto();
+    if (hasError) {
+      return std::make_unique<AST::Err>("Error parsing function prototype");
+    }
+    std::cerr << "Parsed extern fn with name: " << static_cast<AST::ProtoStmt*>(prototype.get())->name << std::endl;
+    // consume the semicolon
+    advance();
+    return prototype;
   }
   // Only look for other statements if we are not in the global scope (can be a
   // function body)
   if (m_ScopeIndex > 0) {
+    if(match(tok::TokType::i8KW)) {
+      return varDeclaration(ty::Type::Ty_i8);
+    }
     if (match(tok::TokType::i64KW)) {
       return varDeclaration(ty::Type::Ty_i64);
     }

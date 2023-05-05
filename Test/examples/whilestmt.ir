@@ -1,6 +1,5 @@
 fn main() {
   i32 num = 0;
   while num < 5 {
-    num = num + 1;
   }
 }

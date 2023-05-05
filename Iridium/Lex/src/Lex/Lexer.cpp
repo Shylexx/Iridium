@@ -315,6 +315,9 @@ namespace iridium {
       }
       else if (str == "fn") {
         return tok::TokType::Fn;
+      } 
+      else if (str == "i8") {
+        return tok::TokType::i8KW;
       }
       else {
         return tok::TokType::Identifier;
