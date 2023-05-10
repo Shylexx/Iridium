@@ -117,7 +117,7 @@ private:
 class StructDefStmt : public Stmt {
 public:
   ~StructDefStmt() override {}
-  StructDefStmt(const std::string &name, std::vector<std::unique_ptr<AST::VarDeclStmt>> fields)
+  StructDefStmt(const std::string &name, std::vector<std::unique_ptr<AST::Stmt>> fields)
     : m_Name(name), m_Fields(std::move(fields)) {}
 
   void Accept(ASTVisitor* visitor) const override {
@@ -131,7 +131,7 @@ public:
   NodeType node() const override { return NodeType::StructDefNode; }
 
   std::string m_Name;
-  std::vector<std::unique_ptr<AST::VarDeclStmt>> m_Fields;
+  std::vector<std::unique_ptr<AST::Stmt>> m_Fields;
 };
 
 class GlobVarDeclStmt : public Stmt {

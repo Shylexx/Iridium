@@ -38,6 +38,12 @@ bool Parser::ParseFile(const std::string &source) {
       return false;
     }
     std::optional<std::vector<std::string>> tyErrors;
+
+    if(m_CurUnit.m_Items.size() == 0) {
+      std::cerr << "No functions in source code!\n";
+      return false;
+    }
+
     if(m_CurUnit.m_Items.back()->node() == AST::NodeType::FnProtoNode) {
       tyErrors = m_CurUnit.m_Context.CheckProto(static_cast<AST::ProtoStmt*>(m_CurUnit.m_Items.back().get()));
     } else {
@@ -399,9 +405,11 @@ std::unique_ptr<AST::Stmt> Parser::structDefinition() {
 
   consume(tok::TokType::OpenBrace, "Expected '{' after struct name");
 
-  std::vector<std::unique_ptr<AST::VarDeclStmt>> fields;
+  std::vector<std::unique_ptr<AST::Stmt>> fields;
   // parse the fields
   while(peek().getTokType() != tok::TokType::CloseBrace) {
+
+    fields.push_back(varDecl());
 
     if(hasError()) {
       return makeError("Error parsing struct fields");
