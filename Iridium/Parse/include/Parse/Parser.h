@@ -29,10 +29,12 @@ namespace iridium {
     void printSyntaxErrs();
     void printLexedToks();
     AST::Unit m_CurUnit;
+
+    bool hasError() { return m_HasError; }
   private:
     int m_CurTok = 0;
 
-    bool hasError = false;
+    bool m_HasError = false;
     std::string errMsg = "";
 
 
@@ -62,6 +64,7 @@ namespace iridium {
     bool match(tok::TokType type);
     // helper for adding an error node;
     std::unique_ptr<AST::Stmt> makeError(std::string errMsg);
+    std::unique_ptr<AST::Expr> makeErrExpr(std::string errMsg);
 
     tok::Token consume(tok::TokType type, std::string errMessage);
 
@@ -74,6 +77,7 @@ namespace iridium {
     // Items
     std::unique_ptr<AST::Stmt> fnProto();
     std::unique_ptr<AST::Stmt> fnDefinition();
+    std::unique_ptr<AST::Stmt> structDefinition();
     std::unique_ptr<AST::Stmt> varDeclaration(ty::Type type);
     std::unique_ptr<AST::Stmt> ifStmt();
 

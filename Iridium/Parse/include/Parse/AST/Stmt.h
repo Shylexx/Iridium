@@ -92,6 +92,7 @@ private:
   NodeType nodeType = NodeType::FnDeclNode;
 };
 
+
 class VarDeclStmt : public Stmt {
 public:
   ~VarDeclStmt() override {}
@@ -111,6 +112,26 @@ public:
   std::unique_ptr<AST::Expr> m_Initializer;
 private:
   NodeType nodeType = NodeType::VarDeclNode;
+};
+
+class StructDefStmt : public Stmt {
+public:
+  ~StructDefStmt() override {}
+  StructDefStmt(const std::string &name, std::vector<std::unique_ptr<AST::VarDeclStmt>> fields)
+    : m_Name(name), m_Fields(std::move(fields)) {}
+
+  void Accept(ASTVisitor* visitor) const override {
+    visitor->VisitStructDefStmt(this);
+  }
+  
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitStructDefStmt(this);
+  }
+
+  NodeType node() const override { return NodeType::StructDefNode; }
+
+  std::string m_Name;
+  std::vector<std::unique_ptr<AST::VarDeclStmt>> m_Fields;
 };
 
 class GlobVarDeclStmt : public Stmt {

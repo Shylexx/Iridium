@@ -103,13 +103,16 @@ std::unique_ptr<AST::Stmt> Parser::declaration() {
   if (match(tok::TokType::Fn)) {
     return fnDefinition();
   } 
+  if(match(tok::TokType::Struct)) {
+    return structDefinition();
+  }
   if (match(tok::TokType::Extern)) {
     if(!match(tok::TokType::Fn)) {
       std::cerr << "Only functions can be declared as extern" << std::endl;
       return std::make_unique<AST::Err>("Only functions can be declared as extern");
     }
     std::unique_ptr<AST::Stmt> prototype = fnProto();
-    if (hasError) {
+    if (hasError()) {
       return std::make_unique<AST::Err>("Error parsing function prototype");
     }
     std::cerr << "Parsed extern fn with name: " << static_cast<AST::ProtoStmt*>(prototype.get())->name << std::endl;
@@ -195,27 +198,35 @@ tok::Token Parser::consume(tok::TokType type, std::string errMessage) {
     return advance();
   } else {
     std::cerr << "Parse Error: " << errMessage << std::endl;
-    hasError = true;
+    m_HasError = true;
     errMsg = errMessage;
     return tok::Token(0, tok::TokType::ParseError, errMessage);
   }
 }
 
 tok::Token Parser::consumeTy(std::string errMessage) {
-  if (check(tok::TokType::i64KW) ||
-      check(tok::TokType::i32KW) || check(tok::TokType::f64KW) ||
-      check(tok::TokType::f32KW) || check(tok::TokType::BoolKW)) {
+  if (check(tok::TokType::i64KW) 
+      || check(tok::TokType::i32KW) 
+      || check(tok::TokType::f64KW) 
+      || check(tok::TokType::f32KW) 
+      || check(tok::TokType::BoolKW)) {
     return advance();
   } else {
     std::cerr << "Parse Error: " << errMessage << std::endl;
-    hasError = true;
+    m_HasError = true;
     errMsg = errMessage;
     return tok::Token(0, tok::TokType::ParseError, errMessage);
   }
 }
 
 std::unique_ptr<AST::Stmt> Parser::makeError(std::string errMsg) {
+  m_HasError = true;
   return std::move(std::make_unique<AST::Err>(errMsg, currentLine()));
+}
+
+std::unique_ptr<AST::Expr> Parser::makeErrExpr(std::string errMsg) {
+  m_HasError = true;
+  return std::move(std::make_unique<AST::ErrExpr>(errMsg, currentLine()));
 }
 
 tok::Token Parser::advance() {
@@ -235,7 +246,7 @@ std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
   std::cerr << "Var declaration" << std::endl;
   tok::Token name =
       consume(tok::TokType::Identifier, "Expected Identifier For Variable!");
-  if (hasError) {
+  if (hasError()) {
     return makeError(errMsg);
   }
 
@@ -251,7 +262,7 @@ std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
   std::cerr << "end of initializer" << std::endl;
 
   consume(tok::TokType::Semicolon, "Expected ';' after variable declaration!");
-  if (hasError) {
+  if (hasError()) {
     return makeError(errMsg);
   }
 
@@ -277,13 +288,13 @@ std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
 std::unique_ptr<AST::Stmt> Parser::fnProto() {
   std::string name =
       consume(tok::TokType::Identifier, "Expected function name!").getString();
-  if (hasError) {
+  if (hasError()) {
     return makeError(errMsg);
   }
 
   consume(tok::TokType::OpenParen, "Expected '(' after function identifier");
 
-  if (hasError) {
+  if (hasError()) {
     std::cerr << errMsg << std::endl;
     return makeError(errMsg);
   }
@@ -294,18 +305,18 @@ std::unique_ptr<AST::Stmt> Parser::fnProto() {
     do {
       tok::Token paramName =
           consume(tok::TokType::Identifier, "Expected parameter name!");
-      if (hasError) {
+      if (hasError()) {
         std::cerr << errMsg << std::endl;
         return makeError(errMsg);
       }
       consume(tok::TokType::Colon,
               "Expected ':' between parameter name and type!");
-      if (hasError) {
+      if (hasError()) {
         std::cerr << errMsg << std::endl;
         return makeError(errMsg);
       }
       tok::Token paramType = consumeTy("Expected typename!");
-      if (hasError) {
+      if (hasError()) {
         std::cerr << errMsg << std::endl;
         return makeError(errMsg);
       }
@@ -320,7 +331,7 @@ std::unique_ptr<AST::Stmt> Parser::fnProto() {
   }
 
   consume(tok::TokType::CloseParen, "Expected ')' after function parameter(s)");
-  if (hasError) {
+  if (hasError()) {
     return makeError(errMsg);
   }
 
@@ -344,7 +355,7 @@ std::unique_ptr<AST::Stmt> Parser::fnProto() {
 std::unique_ptr<AST::Stmt> Parser::fnDefinition() {
 
   std::unique_ptr<AST::Stmt> prototype = fnProto();
-  if (hasError) {
+  if (hasError()) {
     return std::make_unique<AST::Err>("Error parsing function prototype");
   }
 
@@ -360,7 +371,7 @@ std::unique_ptr<AST::Stmt> Parser::fnDefinition() {
       static_cast<AST::ProtoStmt *>(prototype.release()));
 
   consume(tok::TokType::OpenBrace, "Expected '{' after function declaration");
-  if (hasError) {
+  if (hasError()) {
     return makeError(errMsg);
   }
 
@@ -381,6 +392,20 @@ std::unique_ptr<AST::Stmt> Parser::fnDefinition() {
             << std::endl;
 
   return std::make_unique<AST::FnStmt>(std::move(proto), std::move(body));
+}
+
+std::unique_ptr<AST::Stmt> Parser::structDefinition() {
+  auto nameTok = consume(tok::TokType::Identifier, "Expected Struct name");
+
+  consume(tok::TokType::OpenBrace, "Expected '{' after struct name");
+
+  std::vector<std::unique_ptr<AST::VarDeclStmt>> fields;
+  // parse the fields
+  while(peek().getTokType() != tok::TokType::CloseBrace) {
+    // TODO
+  }
+
+  return std::make_unique<AST::StructDefStmt>(nameTok.getString(), std::move(fields));
 }
 
 std::unique_ptr<AST::Stmt> Parser::ifStmt() {
@@ -505,6 +530,10 @@ std::unique_ptr<AST::Expr> Parser::assignment() {
 
     // find the value to assign to the identifier
     std::unique_ptr<AST::Expr> value = assignment();
+
+    if(hasError()) {
+      return makeErrExpr("Variable Initializer Error");
+    }
 
     std::cerr << "expr iden: " << static_cast<AST::VarExpr *>(expr.get())->Iden << std::endl;
     if (expr->exprType() == AST::ExprType::Var) {
@@ -749,8 +778,8 @@ std::unique_ptr<AST::Expr> Parser::identifier() {
     return std::make_unique<AST::ErrExpr>("Incorrect param count",
                                           currentLine());
   }
-  return std::make_unique<AST::CallExpr>(name, std::move(args),
-                                         m_CurUnit.m_Functions[name]->retType);
+  return std::make_unique<AST::CallExpr>(name, std::move(args), 
+      m_CurUnit.m_Functions[name]->retType);
 }
 
 std::unique_ptr<AST::Stmt> Parser::blockStmt() {
@@ -767,7 +796,7 @@ std::unique_ptr<AST::Stmt> Parser::blockStmt() {
   // std::cerr << "token at end of block was: " <<
   // tok::TokToString(m_Lexer->get(m_CurTok)) << std::endl;
   consume(tok::TokType::CloseBrace, "Expected '}' at end of block!");
-  if (hasError) {
+  if (hasError()) {
     stmts.clear();
     stmts.push_back(std::move(makeError(errMsg)));
   }

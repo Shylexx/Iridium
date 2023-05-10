@@ -361,9 +361,6 @@ namespace iridium {
       if (str == "while") {
         return tok::TokType::While;
       }
-      else if (str == "struct") {
-        return tok::TokType::Struct;
-      }
       else {
         return tok::TokType::Identifier;
       }
@@ -371,6 +368,9 @@ namespace iridium {
     case 6: {
       if (str == "extern") {
         return tok::TokType::Extern;
+      }
+      else if (str == "struct") {
+        return tok::TokType::Struct;
       }
       if (str == "global") {
         return tok::TokType::Global;

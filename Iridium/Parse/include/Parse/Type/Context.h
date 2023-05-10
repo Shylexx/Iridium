@@ -32,6 +32,7 @@ namespace ty {
     ty::Type VisitProtoStmt(const AST::ProtoStmt *stmt); // TODO
     ty::Type VisitFnStmt(const AST::FnStmt *stmt); // TODO
     ty::Type VisitVarDeclStmt(const AST::VarDeclStmt *stmt); // TODO
+    ty::Type VisitStructDefStmt(const AST::StructDefStmt *stmt); // TODO
     ty::Type VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt); // TODO
     ty::Type VisitIfStmt(const AST::IfStmt *stmt); // TODO
     ty::Type VisitWhileStmt(const AST::WhileStmt *stmt); // TODO

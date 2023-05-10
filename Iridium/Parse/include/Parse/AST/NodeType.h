@@ -14,13 +14,14 @@ enum class NodeType {
   WhileStmtNode,
   FnDeclNode,
   VarDeclNode,
+  StructDefNode,
   GlobVarDeclNode,
   IfStmtNode,
   Expr,
 };
 
 std::string NodeToString(NodeType nodeType);
-}
-}
+} // namespace AST
+} // namespace iridium
 
 #endif

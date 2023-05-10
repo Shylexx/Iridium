@@ -9,6 +9,7 @@ namespace AST {
 
   class ExprStmt;
   class ProtoStmt;
+  class StructDefStmt;
   class FnStmt;
   class VarDeclStmt;
   class GlobVarDeclStmt;
@@ -38,6 +39,7 @@ namespace AST {
     virtual void VisitProtoStmt(const AST::ProtoStmt* stmt) = 0;
     virtual void VisitFnStmt(const AST::FnStmt* stmt) = 0;
     virtual void VisitVarDeclStmt(const AST::VarDeclStmt* stmt) = 0;
+    virtual void VisitStructDefStmt(const AST::StructDefStmt* stmt) = 0;
     virtual void VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt* stmt) = 0;
     virtual void VisitErrStmt(const AST::Err* stmt) = 0;
     virtual void VisitIfStmt(const AST::IfStmt* stmt) = 0;

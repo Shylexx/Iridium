@@ -19,6 +19,8 @@ namespace AST {
         return "STMT:GLOBVARDECL";
       case NodeType::VarDeclNode:
         return "STMT:VARDECL";
+      case NodeType::StructDefNode:
+        return "STMT:STRUCTDEF";
       default:
         return "NODE:UNIMPL";
     }
