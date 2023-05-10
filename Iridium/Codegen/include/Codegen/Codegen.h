@@ -29,6 +29,7 @@ public:
   void Optimize();
   void PrintIR();
   // statements
+  void VisitStructDefStmt(const AST::StructDefStmt *stmt) override;
   void VisitExprStmt(const AST::ExprStmt *stmt) override; // TODO
   void VisitProtoStmt(const AST::ProtoStmt *stmt) override; // TODO
   void VisitFnStmt(const AST::FnStmt *stmt) override; // TODO

@@ -84,7 +84,19 @@ namespace ty {
     return ty::Type::Ty_Void;
   }
 
+  ty::Type Context::VisitStructDefStmt(const AST::StructDefStmt *stmt) {
+    // struct definitions are items, not expressions
+    return ty::Type::Ty_Void;
+  }
+
   ty::Type Context::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
+    ty::Type initType = stmt->m_Initializer->tyCheck(this);
+    if(stmt->type != initType) {
+      tyError(
+          "Cannot assign variable " + stmt->m_Name + 
+          " of type " + ty::to_string(stmt->type) + 
+          " to value of type " + ty::to_string(initType));
+    }
     return stmt->m_Initializer->tyCheck(this);
   }
 

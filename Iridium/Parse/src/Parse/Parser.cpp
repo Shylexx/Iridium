@@ -402,10 +402,40 @@ std::unique_ptr<AST::Stmt> Parser::structDefinition() {
   std::vector<std::unique_ptr<AST::VarDeclStmt>> fields;
   // parse the fields
   while(peek().getTokType() != tok::TokType::CloseBrace) {
-    // TODO
+
+    if(hasError()) {
+      return makeError("Error parsing struct fields");
+    }
   }
 
+  consume(tok::TokType::CloseBrace, "Expected '}' after struct fields");
+
   return std::make_unique<AST::StructDefStmt>(nameTok.getString(), std::move(fields));
+}
+
+std::unique_ptr<AST::Stmt> Parser::varDecl() {
+    if(match(tok::TokType::i8KW)) {
+      return varDeclaration(ty::Type::Ty_i8);
+    }
+    if (match(tok::TokType::i64KW)) {
+      return varDeclaration(ty::Type::Ty_i64);
+    }
+    if (match(tok::TokType::i32KW)) {
+      return varDeclaration(ty::Type::Ty_i32);
+    }
+    if (match(tok::TokType::f64KW)) {
+      return varDeclaration(ty::Type::Ty_f64);
+    }
+    if (match(tok::TokType::f32KW)) {
+      return varDeclaration(ty::Type::Ty_f32);
+    }
+    if (match(tok::TokType::BoolKW)) {
+      return varDeclaration(ty::Type::Ty_Bool);
+    }
+    if (match(tok::TokType::Identifier)) {
+      return varDeclaration(ty::Type::Ty_Struct);
+    }
+    return makeError("Expected typename to declare a variable");
 }
 
 std::unique_ptr<AST::Stmt> Parser::ifStmt() {

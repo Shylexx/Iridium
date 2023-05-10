@@ -8,7 +8,10 @@
 
 namespace iridium {
   void Driver::CompileFile(const std::string &path) {
+    std::cerr << "Initialising obj targets\n";
+    m_Target.InitObjTargets();
     m_Codegen.InitModuleAndFPM();
+
     std::string source = ReadFileToString(path);
     std::cerr << "Parsing File of name: " << path << std::endl;
     std::cerr << source << std::endl;
@@ -18,7 +21,7 @@ namespace iridium {
       m_Codegen.GenUnit(m_Parser.m_CurUnit);
       m_Codegen.PrintIR();
 
-      m_Target.InitObjTargets();
+      std::cerr << "Writing to Obj file\n";
       WriteToObjectFile();
 
     } else {
@@ -35,6 +38,9 @@ namespace iridium {
 
   bool Driver::WriteToObjectFile() {
     m_Target.SetCurrentTargetMachine();
+    m_Codegen.module()->setTargetTriple(m_Target.targetTriple());
+    m_Codegen.module()->setDataLayout(m_Target.targetMachine()->createDataLayout());
+
     auto filename = "output.o";
 
     std::error_code EC;
@@ -51,6 +57,8 @@ namespace iridium {
       llvm::errs() << "TargetMachine can't emit a file of this type";
       return 1;
     }
+
+    std::cerr << "Running obj pass\n";
 
     pass.run(*m_Codegen.module());
     dest.flush();

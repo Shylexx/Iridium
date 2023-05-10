@@ -2,6 +2,7 @@
 #define __IRIDIUM_DRIVER_H__
 
 #include "Codegen/Codegen.h"
+#include "Main/Opts.h"
 #include "Parse/Parser.h"
 #include "Main/Sys.h"
 #include <string>
@@ -12,6 +13,7 @@ namespace iridium {
 	public:
 		void CompileFile(const std::string& path);
 		bool WriteToObjectFile();
+		Opts opts{};
 	private:
 		std::string ReadFileToString(const std::string& path);
 

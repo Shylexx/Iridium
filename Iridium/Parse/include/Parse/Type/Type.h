@@ -13,6 +13,7 @@ enum class Type {
   Ty_f64,
   Ty_f32,
   Ty_Bool,
+  Ty_Struct,
   Ty_Void,
   Ty_Err,
 };

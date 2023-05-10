@@ -21,12 +21,17 @@ int main(int argc, char*argv[]) {
   }
 
   iridium::Driver driver;
-  std::cerr << "Num of Args: " << argc << std::endl;
-  if(argc > 1) {
-    driver.CompileFile(argv[1]);
-  } else {
-    std::cerr << "No File path given" << std::endl;
+
+  driver.opts.printLLVMIR = opts["print-ir"].as<bool>();
+
+  if(argc < 2) {
+    std::cout << "Try using -h or --help for help" << std::endl;
   }
+
+  if(opts.count("file")) {
+    driver.CompileFile(opts["file"].as<std::string>());
+  }
+
   return 0;
 }
 

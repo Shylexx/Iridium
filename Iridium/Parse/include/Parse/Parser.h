@@ -74,6 +74,7 @@ namespace iridium {
     // Statements
     std::unique_ptr<AST::Stmt> statement();
     std::unique_ptr<AST::Stmt> declaration();
+    std::unique_ptr<AST::Stmt> varDecl();
     // Items
     std::unique_ptr<AST::Stmt> fnProto();
     std::unique_ptr<AST::Stmt> fnDefinition();

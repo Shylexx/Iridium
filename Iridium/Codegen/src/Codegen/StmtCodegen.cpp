@@ -11,6 +11,9 @@ namespace iridium {
   void Codegen::VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt) {
   }
 
+  void Codegen::VisitStructDefStmt(const AST::StructDefStmt *stmt) {
+  }
+
   void Codegen::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
     llvm::IRBuilder<> temp(&m_CurFunc->getEntryBlock());
 
@@ -121,10 +124,10 @@ void Codegen::VisitIfStmt(const AST::IfStmt *stmt) {
 
   ElseBlock = m_Builder->GetInsertBlock();
 
-  // Emit merge block if neither block terminated themselves
-  if(!thenTerminates && !elseTerminates) {
-  parent->getBasicBlockList().push_back(MergeBlock);
-  m_Builder->SetInsertPoint(MergeBlock);
+  // Emit merge block if either block continues past this point
+  if(!thenTerminates || !elseTerminates) {
+    parent->getBasicBlockList().push_back(MergeBlock);
+    m_Builder->SetInsertPoint(MergeBlock);
   }
 }
 
