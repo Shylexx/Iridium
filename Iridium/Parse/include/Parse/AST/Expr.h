@@ -154,7 +154,7 @@ public:
   ReturnExpr(std::unique_ptr<Expr> value, ty::Type type)
     : Val(std::move(value)), Expr(type) {}
 
-  ReturnExpr(ty::Type type = ty::Type::Ty_Void) : Expr(type) {}
+  ReturnExpr(ty::Type type = ty::Type(ty::tyType::Ty_Void)) : Expr(type) {}
 
   llvm::Value* Accept(ASTVisitor* visitor) const override {
     return visitor->VisitReturnExpr(this);
@@ -238,7 +238,7 @@ public:
   ~ErrExpr() override {}
 
   ErrExpr(const std::string& errMsg, int sourceLine = 0) 
-    : Msg(errMsg), Expr(ty::Type::Ty_Err), Line(sourceLine) {}
+    : Msg(errMsg), Expr(ty::Type(ty::tyType::Ty_Err)), Line(sourceLine) {}
 
   const std::string& message() const { return Msg; }
 

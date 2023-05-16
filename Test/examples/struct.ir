@@ -1,0 +1,4 @@
+struct MyStruct {
+	i32 first;
+	f64 second;
+}

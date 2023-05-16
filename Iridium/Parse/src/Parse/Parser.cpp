@@ -37,22 +37,18 @@ bool Parser::ParseFile(const std::string &source) {
       m_CurUnit.errMessage();
       return false;
     }
-    std::optional<std::vector<std::string>> tyErrors;
+  }
 
-    if(m_CurUnit.m_Items.size() == 0) {
-      std::cerr << "No functions in source code!\n";
-      return false;
-    }
+  if(m_CurUnit.m_Items.size() == 0) {
+    std::cerr << "No item declarations in source code!\n";
+    return false;
+  }
 
-    if(m_CurUnit.m_Items.back()->node() == AST::NodeType::FnProtoNode) {
-      tyErrors = m_CurUnit.m_Context.CheckProto(static_cast<AST::ProtoStmt*>(m_CurUnit.m_Items.back().get()));
-    } else {
-      tyErrors = m_CurUnit.m_Context.CheckFn(static_cast<AST::FnStmt*>(m_CurUnit.m_Items.back().get()));
-    }
-    if(tyErrors.has_value()) {
-      for(auto& err : tyErrors.value()) {
-        std::cerr << "Type Error: " << err << std::endl;
-      }
+  std::optional<std::vector<std::string>> tyErrors = m_CurUnit.m_Context.CheckTypes();
+
+  if(tyErrors.has_value()) {
+    for(auto& err : tyErrors.value()) {
+      std::cerr << "Type Error: " << err << std::endl;
       return false;
     }
   }
@@ -63,13 +59,15 @@ bool Parser::ParseFile(const std::string &source) {
 bool Parser::ResolveItems() {
 
   while (!atEnd()) {
+    if( match(tok::TokType::Struct)) {
+      std::unique_ptr<AST::Stmt> structDef = structDefinition();
+      m_CurUnit.m_Context.addStruct(std::move(structDef));
+    }
     if (match(tok::TokType::Fn)) {
       // if we error, return false to show the err
       std::unique_ptr<AST::Stmt> proto = fnProto();
-      if (auto err = dynamic_cast<AST::Err *>(proto.get())) {
+      if(hasError()) {
         std::cerr << "Error parsing function prototype!" << std::endl;
-        std::cerr << "Syntax Error on line [" << err->m_SourceLine
-                  << "]: " << err->m_Message << std::endl;
         return false;
       }
       std::unique_ptr<AST::ProtoStmt> casted(
@@ -83,10 +81,8 @@ bool Parser::ResolveItems() {
       // consume the 'extern'
       advance();
       std::unique_ptr<AST::Stmt> proto = fnProto();
-      if (auto err = dynamic_cast<AST::Err *>(proto.get())) {
+      if(hasError()) {
         std::cerr << "Error parsing function prototype!" << std::endl;
-        std::cerr << "Syntax Error on line [" << err->m_SourceLine
-                  << "]: " << err->m_Message << std::endl;
         return false;
       }
       std::unique_ptr<AST::ProtoStmt> casted(
@@ -130,22 +126,22 @@ std::unique_ptr<AST::Stmt> Parser::declaration() {
   // function body)
   if (m_ScopeIndex > 0) {
     if(match(tok::TokType::i8KW)) {
-      return varDeclaration(ty::Type::Ty_i8);
+      return varDeclaration(ty::tyType::Ty_i8);
     }
     if (match(tok::TokType::i64KW)) {
-      return varDeclaration(ty::Type::Ty_i64);
+      return varDeclaration(ty::tyType::Ty_i64);
     }
     if (match(tok::TokType::i32KW)) {
-      return varDeclaration(ty::Type::Ty_i32);
+      return varDeclaration(ty::tyType::Ty_i32);
     }
     if (match(tok::TokType::f64KW)) {
-      return varDeclaration(ty::Type::Ty_f64);
+      return varDeclaration(ty::tyType::Ty_f64);
     }
     if (match(tok::TokType::f32KW)) {
-      return varDeclaration(ty::Type::Ty_f32);
+      return varDeclaration(ty::tyType::Ty_f32);
     }
     if (match(tok::TokType::BoolKW)) {
-      return varDeclaration(ty::Type::Ty_Bool);
+      return varDeclaration(ty::tyType::Ty_Bool);
     }
     /*
     if (match(tok::TokType::StringKW)) {
@@ -341,11 +337,11 @@ std::unique_ptr<AST::Stmt> Parser::fnProto() {
     return makeError(errMsg);
   }
 
-  ty::Type retType = ty::Type::Ty_Void;
+  ty::Type retType = ty::tyType::Ty_Void;
   if (match(tok::TokType::Arrow)) {
     tok::TokType tokType = advance().getTokType();
     ty::Type maybeType = ty::from_keyword(tokType);
-    if (maybeType != ty::Type::Ty_Err) {
+    if (maybeType.type() != ty::tyType::Ty_Err) {
       retType = maybeType;
     } else {
       std::cerr << "Expected typename after function return type specifier"
@@ -366,10 +362,12 @@ std::unique_ptr<AST::Stmt> Parser::fnDefinition() {
   }
 
   // if parsing proto doesnt get a prototype, return the error node
+  /*
   if (!dynamic_cast<AST::ProtoStmt *>(prototype.get())) {
     return prototype;
     std::cerr << "Proto Stmt did not cast" << std::endl;
   }
+  */
 
   // make new unique ptr from abstract one and release old pointer
   // this is dodgy but if it works it works
@@ -423,25 +421,25 @@ std::unique_ptr<AST::Stmt> Parser::structDefinition() {
 
 std::unique_ptr<AST::Stmt> Parser::varDecl() {
     if(match(tok::TokType::i8KW)) {
-      return varDeclaration(ty::Type::Ty_i8);
+      return varDeclaration(ty::tyType::Ty_i8);
     }
     if (match(tok::TokType::i64KW)) {
-      return varDeclaration(ty::Type::Ty_i64);
+      return varDeclaration(ty::tyType::Ty_i64);
     }
     if (match(tok::TokType::i32KW)) {
-      return varDeclaration(ty::Type::Ty_i32);
+      return varDeclaration(ty::tyType::Ty_i32);
     }
     if (match(tok::TokType::f64KW)) {
-      return varDeclaration(ty::Type::Ty_f64);
+      return varDeclaration(ty::tyType::Ty_f64);
     }
     if (match(tok::TokType::f32KW)) {
-      return varDeclaration(ty::Type::Ty_f32);
+      return varDeclaration(ty::tyType::Ty_f32);
     }
     if (match(tok::TokType::BoolKW)) {
-      return varDeclaration(ty::Type::Ty_Bool);
+      return varDeclaration(ty::tyType::Ty_Bool);
     }
     if (match(tok::TokType::Identifier)) {
-      return varDeclaration(ty::Type::Ty_Struct);
+      return varDeclaration(ty::tyType::Ty_Struct);
     }
     return makeError("Expected typename to declare a variable");
 }
@@ -485,7 +483,7 @@ std::unique_ptr<AST::Stmt> Parser::ifStmt() {
 std::unique_ptr<AST::Expr> Parser::returnExpr() {
   if (check(tok::TokType::Semicolon)) {
     if (m_CurUnit.m_Functions[m_CurFunction].get()->retType ==
-        ty::Type::Ty_Void) {
+        ty::Type(ty::tyType::Ty_Void)) {
       std::cerr << "Parsing empty return" << std::endl;
       consume(tok::TokType::Semicolon, "Expected ';' after return");
       return std::make_unique<AST::ReturnExpr>();
@@ -594,7 +592,7 @@ std::unique_ptr<AST::Expr> Parser::orExpr() {
     std::unique_ptr<AST::Expr> rhs = andExpr();
     expr =
         std::make_unique<AST::LogicalExpr>(AST::LogicOp::OP_OR, std::move(expr),
-                                           std::move(rhs), ty::Type::Ty_Bool);
+                                           std::move(rhs), ty::Type(ty::tyType::Ty_Bool));
   }
 
   return expr;
@@ -607,7 +605,7 @@ std::unique_ptr<AST::Expr> Parser::andExpr() {
     std::unique_ptr<AST::Expr> rhs = equality();
     expr = std::make_unique<AST::LogicalExpr>(AST::LogicOp::OP_AND,
                                               std::move(expr), std::move(rhs),
-                                              ty::Type::Ty_Bool);
+                                              ty::Type(ty::tyType::Ty_Bool));
   }
 
   return expr;
@@ -620,7 +618,7 @@ std::unique_ptr<AST::Expr> Parser::equality() {
     tok::TokType op = previous().getTokType();
     std::unique_ptr<AST::Expr> rhs = comparison();
     expr = std::make_unique<AST::BinaryExpr>(op, std::move(expr),
-                                             std::move(rhs), ty::Type::Ty_Bool);
+                                             std::move(rhs), ty::Type(ty::tyType::Ty_Bool));
   }
 
   return expr;
@@ -636,7 +634,7 @@ std::unique_ptr<AST::Expr> Parser::comparison() {
     std::unique_ptr<AST::Expr> rhs = term();
     if (expr->retType == rhs->retType) {
       expr = std::make_unique<AST::BinaryExpr>(
-          op, std::move(expr), std::move(rhs), ty::Type::Ty_Bool);
+          op, std::move(expr), std::move(rhs), ty::Type(ty::tyType::Ty_Bool));
     } else {
       std::cerr << ty::to_string(expr->retType);
       std::cerr << ty::to_string(rhs->retType);
@@ -728,11 +726,10 @@ std::unique_ptr<AST::Expr> Parser::unary() {
     std::cerr << "Parsed a Unary expr" << std::endl;
     tok::TokType op = previous().getTokType();
     std::unique_ptr<AST::Expr> expr = unary();
-    ty::Type type;
+    ty::Type type = expr->retType;
     if (op == tok::TokType::Exclaim) {
-      type = ty::Type::Ty_Bool;
+      type = ty::Type(ty::tyType::Ty_Bool);
     } else { // if not boolean NOT, use the existing type
-      type = expr->retType;
     }
     return std::make_unique<AST::UnaryExpr>(op, std::move(expr), type);
   }
@@ -745,10 +742,10 @@ std::unique_ptr<AST::Expr> Parser::primary() {
   switch (primary.getTokType()) {
   case tok::TokType::Integer:
     std::cerr << "Parsed an integer" << std::endl;
-    return std::make_unique<AST::IntExpr>(primary.geti64(), ty::Type::Ty_i32);
+    return std::make_unique<AST::IntExpr>(primary.geti64(), ty::Type(ty::tyType::Ty_i32));
   case tok::TokType::Float:
     // std::cerr << "Parsed a float" << std::endl;
-    return std::make_unique<AST::FloatExpr>(primary.getf64(), ty::Type::Ty_f32);
+    return std::make_unique<AST::FloatExpr>(primary.getf64(), ty::Type(ty::tyType::Ty_f32));
   case tok::TokType::Identifier:
     return identifier();
   case tok::TokType::OpenParen:

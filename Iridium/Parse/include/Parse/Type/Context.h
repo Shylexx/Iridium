@@ -18,8 +18,9 @@ namespace ty {
   class Context {
   public:
     Context(AST::Unit* parentUnit);
+    void addStruct(std::unique_ptr<AST::Stmt> def);
     // if there are type errors, returns a vec of the error messages
-    std::optional<std::vector<std::string>> CheckTypes(const std::vector<AST::Stmt>& ast);
+    std::optional<std::vector<std::string>> CheckTypes();
     std::optional<std::vector<std::string>> CheckFn(
         const AST::FnStmt* fn
         );
@@ -54,10 +55,12 @@ namespace ty {
 
     ty::Type GenError(const char *Str) {
       std::cerr << "Type Error: " << Str << std::endl;
-      return ty::Type::Ty_Err;
+      return ty::Type(ty::tyType::Ty_Err, true);
     }
 
   private:
+    // map of custom types to field names and types
+    std::unordered_map<std::string, std::vector<std::unique_ptr<AST::Stmt>>> m_Environment;
     std::vector<std::string> m_CustomTypes;
     // The current set of bindings we are type checking with
     std::unordered_map<std::string, ty::Type> m_CurBindings;

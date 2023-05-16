@@ -11,7 +11,17 @@ namespace ty {
     m_Unit = unit;
   }
 
-  std::optional<std::vector<std::string>> Context::CheckTypes(const std::vector<AST::Stmt> &ast) {
+  void Context::addStruct(std::unique_ptr<AST::Stmt> def) {
+    auto definition = static_cast<AST::StructDefStmt*>(def.get());
+
+    m_Environment[definition->m_Name] = std::move(definition->m_Fields);
+  }
+
+  std::optional<std::vector<std::string>> Context::CheckTypes() {
+
+    for(auto& item : m_Unit->m_Items) {
+      item->tyCheck(this);
+    }
 
     // if we have errors, return them
     if(m_TypeErrors.size() > 0) {
@@ -59,13 +69,13 @@ namespace ty {
   }
 
   // Type check statements
-  ty::Type Context::VisitIfStmt(const AST::IfStmt* stmt) { return ty::Type::Ty_Void; }
+  ty::Type Context::VisitIfStmt(const AST::IfStmt* stmt) { return ty::Type(tyType::Ty_Void); }
 
-  ty::Type Context::VisitWhileStmt(const AST::WhileStmt* stmt) { return ty::Type::Ty_Void; }
+  ty::Type Context::VisitWhileStmt(const AST::WhileStmt* stmt) { return ty::Type(tyType::Ty_Void); }
   
-  ty::Type Context::VisitProtoStmt(const AST::ProtoStmt *stmt) { return ty::Type::Ty_Void; }
+  ty::Type Context::VisitProtoStmt(const AST::ProtoStmt *stmt) { return ty::Type(tyType::Ty_Void); }
 
-  ty::Type Context::VisitErrStmt(const AST::Err *stmt) { return ty::Type::Ty_Void; }
+  ty::Type Context::VisitErrStmt(const AST::Err *stmt) { return ty::Type(tyType::Ty_Void); }
 
   ty::Type Context::VisitBlockStmt(const AST::BlockStmt *expr) {
     for(auto& stmt : expr->body) {
@@ -73,7 +83,7 @@ namespace ty {
       stmt->tyCheck(this);
     }
     // block itself returns void, so should be as such if using a block in an expr
-    return ty::Type::Ty_Void;
+    return ty::Type(tyType::Ty_Void);
   }
 
   ty::Type Context::VisitFnStmt(const AST::FnStmt *stmt) {
@@ -81,17 +91,17 @@ namespace ty {
     // typecheck the body (should be a blockstmt)
     stmt->body->tyCheck(this);
     // a function definition itself has no type!
-    return ty::Type::Ty_Void;
+    return ty::Type(tyType::Ty_Void);
   }
 
   ty::Type Context::VisitStructDefStmt(const AST::StructDefStmt *stmt) {
     // struct definitions are items, not expressions
-    return ty::Type::Ty_Void;
+    return ty::Type(tyType::Ty_Void);
   }
 
   ty::Type Context::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
     ty::Type initType = stmt->m_Initializer->tyCheck(this);
-    if(stmt->type != initType) {
+    if(stmt->type.type() != initType.type()) {
       tyError(
           "Cannot assign variable " + stmt->m_Name + 
           " of type " + ty::to_string(stmt->type) + 
@@ -117,9 +127,9 @@ namespace ty {
     std::cerr << "tyc rhs" << std::endl;
     ty::Type rType = expr->RHS->tyCheck(this);
     // check if lType and rType are compatible with operand
-    if(lType != rType) {
+    if(lType.type() != rType.type()) {
       tyError("Can't use binary expression with mismatched types");
-      return ty::Type::Ty_Void;
+      return ty::Type(tyType::Ty_Void);
     }
     return lType;
   }
@@ -131,15 +141,15 @@ namespace ty {
 
   ty::Type Context::VisitIntExpr(const AST::IntExpr *expr) {
     std::cerr << "tyc int expr" << std::endl; 
-    return ty::Type::Ty_i32;
+    return ty::Type(tyType::Ty_i32);
   }
 
   ty::Type Context::VisitFloatExpr(const AST::FloatExpr* expr) {
-    return ty::Type::Ty_f32;
+    return ty::Type(tyType::Ty_f32);
   }
 
   ty::Type Context::VisitBoolExpr(const AST::BoolExpr *expr) {
-    return ty::Type::Ty_Bool;
+    return ty::Type(tyType::Ty_Bool);
   }
 
   ty::Type Context::VisitCallExpr(const AST::CallExpr* expr) {
@@ -157,11 +167,11 @@ namespace ty {
       tyError("Tried to return value of incorrect type from function");
     }
     // return expr itself is void
-    return ty::Type::Ty_Void;
+    return ty::Type(tyType::Ty_Void);
   }
 
   ty::Type Context::VisitErrExpr(const AST::ErrExpr *expr) {
-    return ty::Type::Ty_Err;
+    return ty::Type(tyType::Ty_Err);
   }
 
   ty::Type Context::VisitAssignExpr(const AST::AssignExpr *expr) {
@@ -172,12 +182,12 @@ namespace ty {
   ty::Type Context::VisitLogicalExpr(const AST::LogicalExpr *expr) {
     auto lType = expr->LHS->tyCheck(this);
     auto rType = expr->RHS->tyCheck(this);
-    if(lType != ty::Type::Ty_Bool || rType != ty::Type::Ty_Bool) {
+    if(lType.type() != ty::tyType::Ty_Bool || rType.type() != ty::tyType::Ty_Bool) {
       tyError("Cannot compare non boolean expressions using logical operator");
-      return ty::Type::Ty_Err;
+      return ty::tyType::Ty_Err;
     }
 
-    return ty::Type::Ty_Bool;
+    return ty::Type(tyType::Ty_Bool);
   }
 
   /*

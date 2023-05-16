@@ -41,7 +41,7 @@ namespace iridium {
   }
 
 void Codegen::VisitWhileStmt(const AST::WhileStmt *stmt) {
-  if (stmt->Cond->retType != ty::Type::Ty_Bool) {
+  if (stmt->Cond->retType.type() != ty::tyType::Ty_Bool) {
     std::cerr << "Condition passed to while statement does not resolve to true or false" << std::endl;
     std::cerr << "While Stmt condition is of type: " << ty::to_string(stmt->Cond->retType) << std::endl;
   }
@@ -80,7 +80,7 @@ void Codegen::VisitWhileStmt(const AST::WhileStmt *stmt) {
 }
 
 void Codegen::VisitIfStmt(const AST::IfStmt *stmt) {
-  if (stmt->Cond->retType != ty::Type::Ty_Bool) {
+  if (stmt->Cond->retType.type() != ty::tyType::Ty_Bool) {
     std::cerr << "Condition passed to if statement does not resolve to true or false" << std::endl;
     std::cerr << "If Stmt condition is of type: " << ty::to_string(stmt->Cond->retType) << std::endl;
   }

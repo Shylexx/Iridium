@@ -75,19 +75,22 @@ namespace iridium {
   }
 
   llvm::Type* Codegen::from_Ty(ty::Type type) {
-    switch(type) {
-      case ty::Type::Ty_Bool:
+    switch(type.type()) {
+      case ty::tyType::Ty_Bool:
 	return llvm::Type::getInt1Ty(*m_Context);
-      case ty::Type::Ty_i64:
+      case ty::tyType::Ty_i64:
 	return llvm::Type::getInt64Ty(*m_Context);
-      case ty::Type::Ty_i32:
+      case ty::tyType::Ty_i32:
 	return llvm::Type::getInt32Ty(*m_Context);
-      case ty::Type::Ty_f64:
+      case ty::tyType::Ty_f64:
 	return llvm::Type::getDoubleTy(*m_Context);
-      case ty::Type::Ty_f32:
+      case ty::tyType::Ty_f32:
 	return llvm::Type::getFloatTy(*m_Context);
-      case ty::Type::Ty_Void:
+      case ty::tyType::Ty_Void:
 	return llvm::Type::getVoidTy(*m_Context);
+      case ty::tyType::Ty_Struct:
+	// TODO: figure out what this is
+	//return llvm::Type::;
       default:
 	return nullptr;
     }

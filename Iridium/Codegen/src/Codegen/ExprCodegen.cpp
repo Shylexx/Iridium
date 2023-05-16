@@ -53,21 +53,21 @@ llvm::Value *Codegen::VisitBinaryExpr(const AST::BinaryExpr *expr) {
   case tok::TokType::Asterisk:
     return m_Builder->CreateMul(left, right, "multmp");
   case tok::TokType::Equality: {
-      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+      if(expr->LHS->retType == ty::tyType::Ty_i32 || expr->LHS->retType == ty::tyType::Ty_i64) {
 	return m_Builder->CreateICmpEQ(left, right, "cmptmp");
-      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+      } else if (expr->LHS->retType == ty::tyType::Ty_f32 || expr->LHS->retType == ty::tyType::Ty_f64) {
 	return m_Builder->CreateFCmpUEQ(left, right, "cmptmp");
       }
     }
   case tok::TokType::NotEquality: {
-      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+      if(expr->LHS->retType == ty::tyType::Ty_i32 || expr->LHS->retType == ty::tyType::Ty_i64) {
 	return m_Builder->CreateICmpNE(left, right, "cmptmp");
-      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+      } else if (expr->LHS->retType == ty::tyType::Ty_f32 || expr->LHS->retType == ty::tyType::Ty_f64) {
 	return m_Builder->CreateFCmpUNE(left, right, "cmptmp");
       }
     }
   case tok::TokType::LessThan: {
-      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+      if(expr->LHS->retType == ty::tyType::Ty_i32 || expr->LHS->retType == ty::tyType::Ty_i64) {
 	std::cout<<"types"<<std::endl;
 
 	std::string type_str;
@@ -83,28 +83,28 @@ llvm::Value *Codegen::VisitBinaryExpr(const AST::BinaryExpr *expr) {
 	std::cout<<"types over" <<std::endl;
 
 	return m_Builder->CreateICmpSLT(left, right, "cmptmp");
-      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+      } else if (expr->LHS->retType == ty::tyType::Ty_f32 || expr->LHS->retType == ty::tyType::Ty_f64) {
 	return m_Builder->CreateFCmpULT(left, right, "cmptmp");
       }
     }
   case tok::TokType::LessOrEqual: {
-      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+      if(expr->LHS->retType == ty::tyType::Ty_i32 || expr->LHS->retType == ty::tyType::Ty_i64) {
 	return m_Builder->CreateICmpSLE(left, right, "cmptmp");
-      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+      } else if (expr->LHS->retType == ty::tyType::Ty_f32 || expr->LHS->retType == ty::tyType::Ty_f64) {
 	return m_Builder->CreateFCmpULE(left, right, "cmptmp");
       }
     }
   case tok::TokType::GreaterThan: {
-      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+      if(expr->LHS->retType == ty::tyType::Ty_i32 || expr->LHS->retType == ty::tyType::Ty_i64) {
 	return m_Builder->CreateICmpSGT(left, right, "cmptmp");
-      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+      } else if (expr->LHS->retType == ty::tyType::Ty_f32 || expr->LHS->retType == ty::tyType::Ty_f64) {
 	return m_Builder->CreateFCmpUGT(left, right, "cmptmp");
       }
     }
   case tok::TokType::GreaterOrEqual: {
-      if(expr->LHS->retType == ty::Type::Ty_i32 || expr->LHS->retType == ty::Type::Ty_i64) {
+      if(expr->LHS->retType == ty::tyType::Ty_i32 || expr->LHS->retType == ty::tyType::Ty_i64) {
 	return m_Builder->CreateICmpSGE(left, right, "cmptmp");
-      } else if (expr->LHS->retType == ty::Type::Ty_f32 || expr->LHS->retType == ty::Type::Ty_f64) {
+      } else if (expr->LHS->retType == ty::tyType::Ty_f32 || expr->LHS->retType == ty::tyType::Ty_f64) {
 	return m_Builder->CreateFCmpUGE(left, right, "cmptmp");
       }
     }

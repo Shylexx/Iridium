@@ -26,6 +26,7 @@ namespace AST {
     void prettyPrint();
     bool error();
     void errMessage();
+    std::vector<std::string> tyCheck();
     ty::Context m_Context = ty::Context(this);
 
   };

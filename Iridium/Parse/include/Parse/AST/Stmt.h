@@ -50,7 +50,7 @@ public:
   ~ProtoStmt() override {}
   ProtoStmt(const std::string& name,
       std::vector<std::pair<tok::Token, ty::Type>> params,
-      ty::Type type = ty::Type::Ty_Void)
+      ty::Type type = ty::Type(ty::tyType::Ty_Void))
     : name(name), params(std::move(params)), retType(type) {}
 
   void Accept(ASTVisitor* visitor) const override {
@@ -63,7 +63,7 @@ public:
 
   std::string name;
   std::vector<std::pair<tok::Token, ty::Type>> params;
-  ty::Type retType = ty::Type::Ty_Void;
+  ty::Type retType = ty::Type(ty::tyType::Ty_Void);
   NodeType node() const override { return NodeType::FnProtoNode; }
 
 private:
