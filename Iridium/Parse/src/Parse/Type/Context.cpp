@@ -99,6 +99,12 @@ namespace ty {
     return ty::Type(tyType::Ty_Void);
   }
 
+  /*
+  ty::Type Context::VisitStructFieldStmt(const AST::StructFieldStmt *stmt) {
+    return ty::Type(tyType::Ty_Void);
+  }
+  */
+
   ty::Type Context::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
     ty::Type initType = stmt->m_Initializer->tyCheck(this);
     if(stmt->type.type() != initType.type()) {

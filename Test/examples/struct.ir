@@ -2,3 +2,7 @@ struct MyStruct {
 	i32 first;
 	f64 second;
 }
+
+fn main() {
+	MyStruct test;
+}

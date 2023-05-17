@@ -11,9 +11,6 @@ namespace iridium {
   void Codegen::VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt) {
   }
 
-  void Codegen::VisitStructDefStmt(const AST::StructDefStmt *stmt) {
-  }
-
   void Codegen::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
     llvm::IRBuilder<> temp(&m_CurFunc->getEntryBlock());
 

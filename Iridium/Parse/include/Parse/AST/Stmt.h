@@ -134,6 +134,29 @@ public:
   std::vector<std::unique_ptr<AST::Stmt>> m_Fields;
 };
 
+/*
+class StructFieldStmt : public Stmt {
+public:
+  ~StructFieldStmt() override {}
+  StructFieldStmt(const std::string &Name, ty::Type ty, std::unique_ptr<AST::Expr>&& initializer = {}) : m_Name(Name), m_Initializer(std::move(initializer)), type(ty) {}
+  
+  void Accept(ASTVisitor* visitor) const override {
+	  visitor->VisitStructFieldStmt(this);
+  }
+
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitStructFieldStmt(this);
+  }
+  NodeType node() const override { return NodeType::VarDeclNode; }
+
+  ty::Type type;
+  std::string m_Name;
+  //std::unique_ptr<AST::Expr> m_Initializer;
+private:
+  NodeType nodeType = NodeType::VarDeclNode;
+};
+*/
+
 class GlobVarDeclStmt : public Stmt {
 public:
   ~GlobVarDeclStmt() override {}

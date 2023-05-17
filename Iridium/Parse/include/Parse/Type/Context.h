@@ -19,6 +19,8 @@ namespace ty {
   public:
     Context(AST::Unit* parentUnit);
     void addStruct(std::unique_ptr<AST::Stmt> def);
+
+    
     // if there are type errors, returns a vec of the error messages
     std::optional<std::vector<std::string>> CheckTypes();
     std::optional<std::vector<std::string>> CheckFn(
@@ -34,6 +36,7 @@ namespace ty {
     ty::Type VisitFnStmt(const AST::FnStmt *stmt); // TODO
     ty::Type VisitVarDeclStmt(const AST::VarDeclStmt *stmt); // TODO
     ty::Type VisitStructDefStmt(const AST::StructDefStmt *stmt); // TODO
+    //ty::Type VisitStructFieldStmt(const AST::StructFieldStmt *stmt); // TODO
     ty::Type VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt); // TODO
     ty::Type VisitIfStmt(const AST::IfStmt *stmt); // TODO
     ty::Type VisitWhileStmt(const AST::WhileStmt *stmt); // TODO
@@ -57,10 +60,10 @@ namespace ty {
       std::cerr << "Type Error: " << Str << std::endl;
       return ty::Type(ty::tyType::Ty_Err, true);
     }
-
-  private:
     // map of custom types to field names and types
     std::unordered_map<std::string, std::vector<std::unique_ptr<AST::Stmt>>> m_Environment;
+
+  private:
     std::vector<std::string> m_CustomTypes;
     // The current set of bindings we are type checking with
     std::unordered_map<std::string, ty::Type> m_CurBindings;

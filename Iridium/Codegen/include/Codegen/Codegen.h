@@ -25,9 +25,12 @@ public:
   static const bool OPTIMIZE = true;
 
   void GenUnit(AST::Unit& unit);
+  void CreateSymbols(const AST::Unit& unit);
   void InitModuleAndFPM();
   void Optimize();
   void PrintIR();
+
+  std::unordered_map<std::string, llvm::StructType*> m_Structs;
   // statements
   void VisitStructDefStmt(const AST::StructDefStmt *stmt) override;
   void VisitExprStmt(const AST::ExprStmt *stmt) override; // TODO

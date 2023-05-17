@@ -18,6 +18,8 @@ namespace iridium {
   }
 
   void Codegen::GenUnit(AST::Unit& unit) {
+    std::cerr << "Generate Structs" << std::endl;
+    CreateSymbols(unit);
     std::cerr << "Items in AST: " << unit.m_Items.size() << std::endl;
     for(auto& decl : unit.m_Items) {
       decl->Accept(this);
@@ -89,8 +91,7 @@ namespace iridium {
       case ty::tyType::Ty_Void:
 	return llvm::Type::getVoidTy(*m_Context);
       case ty::tyType::Ty_Struct:
-	// TODO: figure out what this is
-	//return llvm::Type::;
+	return m_Structs[type.name()];
       default:
 	return nullptr;
     }
