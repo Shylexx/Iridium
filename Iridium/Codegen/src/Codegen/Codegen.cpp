@@ -20,6 +20,7 @@ namespace iridium {
   void Codegen::GenUnit(AST::Unit& unit) {
     std::cerr << "Generate Structs" << std::endl;
     CreateSymbols(unit);
+    PrintIR();
     std::cerr << "Items in AST: " << unit.m_Items.size() << std::endl;
     for(auto& decl : unit.m_Items) {
       decl->Accept(this);
@@ -77,12 +78,14 @@ namespace iridium {
   }
 
   llvm::Type* Codegen::from_Ty(ty::Type type) {
+    std::cerr << "Getting llvm Type" << std::endl;
     switch(type.type()) {
       case ty::tyType::Ty_Bool:
 	return llvm::Type::getInt1Ty(*m_Context);
       case ty::tyType::Ty_i64:
 	return llvm::Type::getInt64Ty(*m_Context);
       case ty::tyType::Ty_i32:
+	std::cerr << "using i32" << std::endl;
 	return llvm::Type::getInt32Ty(*m_Context);
       case ty::tyType::Ty_f64:
 	return llvm::Type::getDoubleTy(*m_Context);

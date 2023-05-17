@@ -106,14 +106,16 @@ namespace ty {
   */
 
   ty::Type Context::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
-    ty::Type initType = stmt->m_Initializer->tyCheck(this);
-    if(stmt->type.type() != initType.type()) {
-      tyError(
-          "Cannot assign variable " + stmt->m_Name + 
-          " of type " + ty::to_string(stmt->type) + 
-          " to value of type " + ty::to_string(initType));
+    if(stmt->m_Initializer) {
+      ty::Type initType = stmt->m_Initializer->tyCheck(this);
+      if(stmt->type.type() != initType.type()) {
+        tyError(
+            "Cannot assign variable " + stmt->m_Name + 
+            " of type " + ty::to_string(stmt->type) + 
+            " to value of type " + ty::to_string(initType));
+      }
     }
-    return stmt->m_Initializer->tyCheck(this);
+    return stmt->type.type();
   }
 
   ty::Type Context::VisitGlobVarDeclStmt(const AST::GlobVarDeclStmt *stmt) {

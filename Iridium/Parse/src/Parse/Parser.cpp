@@ -100,14 +100,20 @@ bool Parser::ResolveItems() {
 }
 
 std::unique_ptr<AST::Stmt> Parser::declaration() {
+  // skip struct decls
+  if(match(tok::TokType::Struct)) {
+    /*
+    while(previous().getTokType() != tok::TokType::CloseBrace) {
+      advance();
+    }
+    */
+    return structDefinition();
+  }
   // The only top level declarations are items
   // (Functions are items)
   if (match(tok::TokType::Fn)) {
     return fnDefinition();
   } 
-  if(match(tok::TokType::Struct)) {
-    return structDefinition();
-  }
   if (match(tok::TokType::Extern)) {
     if(!match(tok::TokType::Fn)) {
       std::cerr << "Only functions can be declared as extern" << std::endl;
@@ -143,6 +149,14 @@ std::unique_ptr<AST::Stmt> Parser::declaration() {
     if (match(tok::TokType::BoolKW)) {
       return varDeclaration(ty::tyType::Ty_Bool);
     }
+    if(peek().getTokType() == tok::TokType::Identifier) {
+      // check if iden matches a struct type
+      if(m_CurUnit.m_Context.m_Environment[peek().getString()].size() > 0) {
+        // if so, its a var decl of the struct
+        auto tok = advance();
+        return varDeclaration(ty::Type(ty::tyType::Ty_Struct,false, tok.getString()));
+      }
+    }
     /*
     if (match(tok::TokType::StringKW)) {
       return varDeclaration(ty::Type::Ty_Void);
@@ -155,6 +169,7 @@ std::unique_ptr<AST::Stmt> Parser::declaration() {
     return statement();
   }
 
+  std::cerr << tok::TokToString(peek()) << "\n";
   return std::make_unique<AST::Err>(
       "Can only Declare Functions or Global Variables in Global scope!",
       currentLine());
@@ -246,6 +261,7 @@ bool Parser::atEnd() { return peek().getTokType() == tok::TokType::EndOfFile; }
 
 std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
   std::cerr << "Var declaration" << std::endl;
+  std::cerr << "Struct field keyword is: " << ty::to_string(type) << std::endl;
   tok::Token name =
       consume(tok::TokType::Identifier, "Expected Identifier For Variable!");
   if (hasError()) {
@@ -256,19 +272,17 @@ std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
     return makeError("Redefinition of variable with name " + name.getString());
   }
 
-  std::cerr << "parsing var initializer" << std::endl;
   std::unique_ptr<AST::Expr> initializer;
   if (match(tok::TokType::Assignment)) {
     initializer = expression();
   }
-  std::cerr << "end of initializer" << std::endl;
 
   consume(tok::TokType::Semicolon, "Expected ';' after variable declaration!");
   if (hasError()) {
     return makeError(errMsg);
   }
 
-
+  
   if (m_ScopeIndex < 1) {
     if (!initializer.get()) {
       return std::make_unique<AST::Err>(
@@ -279,6 +293,7 @@ std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
     return std::make_unique<AST::GlobVarDeclStmt>(name.getString(), type,
                                                   std::move(initializer));
   }
+  
 
   std::cout << "Parsed a Variable Declaration of name " << name.getString()
             << std::endl;
@@ -399,9 +414,12 @@ std::unique_ptr<AST::Stmt> Parser::fnDefinition() {
 }
 
 std::unique_ptr<AST::Stmt> Parser::structDefinition() {
+  // clear any local vars from a function
+  m_CurUnit.m_Vars.clear();
   auto nameTok = consume(tok::TokType::Identifier, "Expected Struct name");
 
   consume(tok::TokType::OpenBrace, "Expected '{' after struct name");
+  m_ScopeIndex += 1;
 
   std::vector<std::unique_ptr<AST::Stmt>> fields;
   // parse the fields
@@ -415,6 +433,11 @@ std::unique_ptr<AST::Stmt> Parser::structDefinition() {
   }
 
   consume(tok::TokType::CloseBrace, "Expected '}' after struct fields");
+  m_ScopeIndex -= 1;
+
+  for(auto& field : fields) {
+    std::cerr << "Struct field type at parse time: " << ty::to_string(static_cast<AST::VarDeclStmt*>(field.get())->type) << std::endl;
+  }
 
   return std::make_unique<AST::StructDefStmt>(nameTok.getString(), std::move(fields));
 }

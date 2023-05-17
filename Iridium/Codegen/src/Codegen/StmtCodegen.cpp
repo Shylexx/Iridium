@@ -15,15 +15,19 @@ namespace iridium {
     llvm::IRBuilder<> temp(&m_CurFunc->getEntryBlock());
 
     // register variable and emit initializer
-    llvm::AllocaInst* alloca = temp.CreateAlloca(from_Ty(stmt->m_Initializer->retType));
+    std::cerr << "Create Alloca for var" << std::endl;
+    std::cerr << "Var type is "  << ty::to_string(stmt->type) << std::endl;
+    llvm::AllocaInst* alloca = temp.CreateAlloca(from_Ty(stmt->type));
     llvm::Value* initialValue;
     if(stmt->m_Initializer) {
+        std::cerr << "Generating initializer" << std::endl;
       initialValue = stmt->m_Initializer->Accept(this);
       if(!initialValue) {
         std::cerr << "Error generating code for variable initializer" << std::endl;
       }
       m_Builder->CreateStore(initialValue, alloca);
     } 
+    std::cerr << "Alloca created for var" << std::endl;
     m_NamedValues[stmt->m_Name] = alloca;
   }
 

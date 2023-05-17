@@ -16,12 +16,15 @@ namespace iridium {
 	}
     }
     void Codegen::VisitStructDefStmt(const AST::StructDefStmt *stmt) {
+	std::cerr << "Start generating struct body" << std::endl;
 	std::vector<llvm::Type*> fieldTypes;
 	for(auto& field : stmt->m_Fields) {
 	    AST::VarDeclStmt* fieldType = static_cast<AST::VarDeclStmt*>(field.get());
+	    std::cerr << "Struct field type is" << ty::to_string(fieldType->type) << "\n";
 	    fieldTypes.push_back(from_Ty(fieldType->type));
 	}
 
 	m_Structs[stmt->m_Name]->setBody(fieldTypes);
+	std::cerr << "End generating struct body" << std::endl;
     }
 }

@@ -96,7 +96,8 @@ private:
 class VarDeclStmt : public Stmt {
 public:
   ~VarDeclStmt() override {}
-  VarDeclStmt(const std::string &Name, ty::Type ty, std::unique_ptr<AST::Expr>&& initializer = {}) : m_Name(Name), m_Initializer(std::move(initializer)), type(ty) {}
+  VarDeclStmt(const std::string &Name, ty::Type ty, std::unique_ptr<AST::Expr>&& initializer = {}) 
+    : m_Name(Name), m_Initializer(std::move(initializer)), type(ty) {}
   
   void Accept(ASTVisitor* visitor) const override {
 	  visitor->VisitVarDeclStmt(this);
