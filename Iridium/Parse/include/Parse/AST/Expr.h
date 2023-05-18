@@ -186,6 +186,27 @@ public:
 
 };
 
+class StructFieldExpr : public Expr {
+public:
+  ~StructFieldExpr() override {}
+
+  StructFieldExpr(const std::string& identifier, ty::Type type)
+    : Iden(identifier), Expr(type) {}
+
+  // the struct the field is a a part of
+  std::unique_ptr<AST::Expr> Struc;
+  std::string Iden;
+
+  llvm::Value* Accept(ASTVisitor* visitor) const override {
+    return visitor->VisitStructFieldExpr(this);
+  }
+  ty::Type tyCheck(ty::Context* context) const override {
+    return context->VisitStructFieldExpr(this);
+  }
+  virtual const ExprType exprType() const override { return ExprType::Var; }
+
+};
+
 class AssignExpr : public Expr {
 public:
   ~AssignExpr() override {}

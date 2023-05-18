@@ -51,6 +51,7 @@ namespace ty {
     ty::Type VisitCallExpr(const AST::CallExpr *expr);
     ty::Type VisitReturnExpr(const AST::ReturnExpr *expr);
     ty::Type VisitVarExpr(const AST::VarExpr *expr);
+    ty::Type VisitStructFieldExpr(const AST::StructFieldExpr *expr);
     ty::Type VisitErrExpr(const AST::ErrExpr *expr);
     ty::Type VisitAssignExpr(const AST::AssignExpr *expr);
     ty::Type VisitLogicalExpr(const AST::LogicalExpr *expr);

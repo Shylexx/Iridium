@@ -28,6 +28,7 @@ namespace AST {
   class ReturnExpr;
   class ErrExpr;
   class VarExpr;
+  class StructFieldExpr;
   class AssignExpr;
   class LogicalExpr;
 }
@@ -57,6 +58,7 @@ namespace AST {
     virtual llvm::Value* VisitCallExpr(const AST::CallExpr* expr) = 0;
     virtual llvm::Value* VisitReturnExpr(const AST::ReturnExpr* expr) = 0;
     virtual llvm::Value* VisitVarExpr(const AST::VarExpr* expr) = 0;
+    virtual llvm::Value* VisitStructFieldExpr(const AST::StructFieldExpr* expr) = 0;
     virtual llvm::Value* VisitErrExpr(const AST::ErrExpr* expr) = 0;
     virtual llvm::Value* VisitAssignExpr(const AST::AssignExpr* expr) = 0;
     virtual llvm::Value* VisitLogicalExpr(const AST::LogicalExpr* expr) = 0;

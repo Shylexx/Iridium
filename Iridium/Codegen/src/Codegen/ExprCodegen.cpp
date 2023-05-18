@@ -4,6 +4,7 @@
 #include "Parse/AST/Stmt.h"
 #include "Parse/Type/Type.h"
 #include "llvm/IR/Function.h"
+#include "llvm/Support/FormatVariadicDetails.h"
 
 #include <iostream>
 #include <llvm/IR/Instructions.h>
@@ -129,6 +130,11 @@ llvm::Value* Codegen::VisitVarExpr(const AST::VarExpr *expr) {
   return m_Builder->CreateLoad(A->getAllocatedType(), A, expr->Iden.c_str());
 }
 
+llvm::Value* Codegen::VisitStructFieldExpr(const AST::StructFieldExpr *expr) {
+    GenError("Struct Fields are not currently supported");
+    return nullptr;
+}
+
 llvm::Value* Codegen::VisitAssignExpr(const AST::AssignExpr *expr) {
   llvm::Value* val = expr->Val->Accept(this);
   if(!val)
@@ -141,6 +147,7 @@ llvm::Value* Codegen::VisitAssignExpr(const AST::AssignExpr *expr) {
   m_Builder->CreateStore(val, variable);
   return val;
 }
+
 
 llvm::Value *Codegen::VisitCallExpr(const AST::CallExpr *expr) {
     llvm::Function* callee = m_Module->getFunction(expr->Callee);

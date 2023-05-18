@@ -12,12 +12,12 @@ namespace iridium {
   }
 
   void Codegen::VisitVarDeclStmt(const AST::VarDeclStmt *stmt) {
-    llvm::IRBuilder<> temp(&m_CurFunc->getEntryBlock());
+    //llvm::IRBuilder<> temp(&m_CurFunc->getEntryBlock());
 
     // register variable and emit initializer
     std::cerr << "Create Alloca for var" << std::endl;
     std::cerr << "Var type is "  << ty::to_string(stmt->type) << std::endl;
-    llvm::AllocaInst* alloca = temp.CreateAlloca(from_Ty(stmt->type));
+    llvm::AllocaInst* alloca = m_Builder->CreateAlloca(from_Ty(stmt->type));
     llvm::Value* initialValue;
     if(stmt->m_Initializer) {
         std::cerr << "Generating initializer" << std::endl;
@@ -103,13 +103,12 @@ void Codegen::VisitIfStmt(const AST::IfStmt *stmt) {
   // do blocks terminate themselves?
   bool thenTerminates = ThenBlock->back().isTerminator();
 
+  // codegen of 'then' can change curent block, update it so the new block is below
+  ThenBlock = m_Builder->GetInsertBlock();
 
   if(ThenBlock->size() == 0 || !thenTerminates) {
     m_Builder->CreateBr(MergeBlock);
   }
-
-  // codegen of 'then' can change curent block, update it so the new block is below
-  ThenBlock = m_Builder->GetInsertBlock();
 
   // else block
   parent->getBasicBlockList().push_back(ElseBlock);
@@ -117,13 +116,12 @@ void Codegen::VisitIfStmt(const AST::IfStmt *stmt) {
 
   stmt->Else->Accept(this);
 
-  bool elseTerminates = ElseBlock->back().isTerminator();
+  ElseBlock = m_Builder->GetInsertBlock();
 
+  bool elseTerminates = ElseBlock->back().isTerminator();
   if(ElseBlock->size() == 0 || !elseTerminates) {
     m_Builder->CreateBr(MergeBlock);
   }
-
-  ElseBlock = m_Builder->GetInsertBlock();
 
   // Emit merge block if either block continues past this point
   if(!thenTerminates || !elseTerminates) {

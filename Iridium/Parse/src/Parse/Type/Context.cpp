@@ -173,8 +173,7 @@ namespace ty {
   }
 
   ty::Type Context::VisitVarExpr(const AST::VarExpr *expr) {
-    std::cerr << "cur func is set to: " << m_CurFunc << "\n";
-    std::cerr << "tyc var with name: " << expr->Iden << " and decled type: " << ty::to_string(m_Unit->m_Vars[m_CurFunc][expr->Iden]) << std::endl;
+    std::cerr << "tyc var expr with name: " << expr->Iden << " and decled type: " << ty::to_string(m_Unit->m_Vars[m_CurFunc][expr->Iden]) << std::endl;
     return m_Unit->m_Vars[m_CurFunc][expr->Iden];
   }
 

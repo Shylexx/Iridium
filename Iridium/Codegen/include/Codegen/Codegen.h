@@ -51,6 +51,7 @@ public:
   llvm::Value *VisitCallExpr(const AST::CallExpr *expr) override;
   llvm::Value *VisitReturnExpr(const AST::ReturnExpr *expr) override;
   llvm::Value *VisitVarExpr(const AST::VarExpr *expr) override;
+  llvm::Value *VisitStructFieldExpr(const AST::StructFieldExpr *expr) override;
   llvm::Value *VisitErrExpr(const AST::ErrExpr *expr) override;
   llvm::Value *VisitAssignExpr(const AST::AssignExpr *expr) override;
   llvm::Value* VisitLogicalExpr(const AST::LogicalExpr *expr) override;

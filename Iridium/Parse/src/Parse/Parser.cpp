@@ -603,6 +603,7 @@ std::unique_ptr<AST::Expr> Parser::assignment() {
     if (expr->exprType() == AST::ExprType::Var) {
       std::string target = static_cast<AST::VarExpr *>(expr.get())->Iden;
       ty::Type type = static_cast<AST::VarExpr *>(expr.get())->retType;
+      std::cerr << "assign expr" << "\n";
       return std::make_unique<AST::AssignExpr>(target, std::move(value), type);
     } else {
       std::cerr << "prev tok is: " << tok::TokToString(m_Lexer->get(m_CurTok - 2)) << std::endl;
@@ -803,46 +804,56 @@ std::unique_ptr<AST::Expr> Parser::identifier() {
     std::cerr << "Parsed a variable ref: " << name << std::endl;
     return std::make_unique<AST::VarExpr>(name, result->second);
   }
-  // otherwise, Function Call
-  // consume the '('
-  advance();
-  std::vector<std::unique_ptr<AST::Expr>> args;
-  if (peek().getTokType() != tok::TokType::CloseParen) {
-    while (1) {
-      if (auto Arg = expression())
-        args.push_back(std::move(Arg));
-      else
-        return nullptr;
+  // otherwise, Function Call or struct getter
+  // consume the '(' or '.'
+  //while(true) {
+    tok::Token tok = advance();
+      std::vector<std::unique_ptr<AST::Expr>> args;
+      if (peek().getTokType() != tok::TokType::CloseParen) {
+        while (1) {
+          if (auto Arg = expression())
+            args.push_back(std::move(Arg));
+          else
+            return nullptr;
 
-      if (peek().getTokType() == tok::TokType::CloseParen)
-        break;
+          if (peek().getTokType() == tok::TokType::CloseParen)
+            break;
 
-      if (peek().getTokType() != tok::TokType::Comma)
-        return nullptr;
+          if (peek().getTokType() != tok::TokType::Comma)
+            return nullptr;
 
-      // consume the comma
+          // consume the comma
+          advance();
+        }
+      }
+
+      // consume closing ')'
       advance();
+
+      auto result = m_CurUnit.m_Functions.find(name);
+      if (result == m_CurUnit.m_Functions.end()) {
+        std::cerr << "Cannot call functions that do not exist!" << std::endl;
+        return std::make_unique<AST::ErrExpr>("Function doesnt exist",
+                                              currentLine());
+      }
+      AST::ProtoStmt *function = result->second.get();
+      if (args.size() != function->params.size()) {
+        std::cerr << "Incorrect amount of parameters passed to function of name '"
+                  << function->name << "'" << std::endl;
+        return std::make_unique<AST::ErrExpr>("Incorrect param count",
+                                              currentLine());
+      }
+      return std::make_unique<AST::CallExpr>(name, std::move(args), 
+          m_CurUnit.m_Functions[name]->retType);
+    /*else if (tok.getTokType() == tok::TokType::Period) {
+      // parse struct getter
+      tok::Token field = consume(tok::TokType::Identifier, "Expected struct field name after '.'");
+
+      //
+      return std::make_unique<AST::FieldGetExpr>();
     }
   }
-
-  // consume closing ')'
-  advance();
-
-  auto result = m_CurUnit.m_Functions.find(name);
-  if (result == m_CurUnit.m_Functions.end()) {
-    std::cerr << "Cannot call functions that do not exist!" << std::endl;
-    return std::make_unique<AST::ErrExpr>("Function doesnt exist",
-                                          currentLine());
-  }
-  AST::ProtoStmt *function = result->second.get();
-  if (args.size() != function->params.size()) {
-    std::cerr << "Incorrect amount of parameters passed to function of name '"
-              << function->name << "'" << std::endl;
-    return std::make_unique<AST::ErrExpr>("Incorrect param count",
-                                          currentLine());
-  }
-  return std::make_unique<AST::CallExpr>(name, std::move(args), 
-      m_CurUnit.m_Functions[name]->retType);
+  */
 }
 
 std::unique_ptr<AST::Stmt> Parser::blockStmt() {
