@@ -46,7 +46,6 @@ namespace ty {
       ) {
     std::cerr << "typechecking fn: " << fn->Proto->name << std::endl;
     m_CurFunc = fn->Proto->name;
-    m_CurBindings = m_Unit->m_Vars;
     std::cerr << "segfaults while type checking" << std::endl;
     fn->tyCheck(this);
     
@@ -69,7 +68,13 @@ namespace ty {
   }
 
   // Type check statements
-  ty::Type Context::VisitIfStmt(const AST::IfStmt* stmt) { return ty::Type(tyType::Ty_Void); }
+  ty::Type Context::VisitIfStmt(const AST::IfStmt* stmt) {
+    // ensure condition has correct types
+    std::cerr << "tyc if stmt condition\n";
+    stmt->Cond->tyCheck(this);
+    std::cerr << "checked if stmt condition\n";
+    return ty::Type(tyType::Ty_Void); 
+  }
 
   ty::Type Context::VisitWhileStmt(const AST::WhileStmt* stmt) { return ty::Type(tyType::Ty_Void); }
   
@@ -82,12 +87,14 @@ namespace ty {
       std::cerr << "tyc block body stmt" << std::endl;
       stmt->tyCheck(this);
     }
+    std::cerr << "end of block" << std::endl;
     // block itself returns void, so should be as such if using a block in an expr
     return ty::Type(tyType::Ty_Void);
   }
 
   ty::Type Context::VisitFnStmt(const AST::FnStmt *stmt) {
     std::cerr << "start type checking the body!" << std::endl;
+    m_CurFunc = stmt->Proto->name;
     // typecheck the body (should be a blockstmt)
     stmt->body->tyCheck(this);
     // a function definition itself has no type!
@@ -161,12 +168,14 @@ namespace ty {
   }
 
   ty::Type Context::VisitCallExpr(const AST::CallExpr* expr) {
+    std::cerr << "checking call expr type\n";
     return m_Unit->m_Functions.at(expr->Callee)->retType;
   }
 
   ty::Type Context::VisitVarExpr(const AST::VarExpr *expr) {
-    std::cerr << "tyc var with name: " << expr->Iden << " and decled type: " << ty::to_string(m_CurBindings.at(expr->Iden)) << std::endl;
-    return m_CurBindings.at(expr->Iden);
+    std::cerr << "cur func is set to: " << m_CurFunc << "\n";
+    std::cerr << "tyc var with name: " << expr->Iden << " and decled type: " << ty::to_string(m_Unit->m_Vars[m_CurFunc][expr->Iden]) << std::endl;
+    return m_Unit->m_Vars[m_CurFunc][expr->Iden];
   }
 
   ty::Type Context::VisitReturnExpr(const AST::ReturnExpr *expr) {

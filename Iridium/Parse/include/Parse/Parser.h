@@ -112,6 +112,10 @@ namespace iridium {
     // Types
     // std::unique_ptr<AST::Type> parseTypeName();
 
+    bool inStructDecl() const { return m_InStruct; }
+
+    bool m_InStruct = false;
+
   };
 } // namespace iridium
 #endif

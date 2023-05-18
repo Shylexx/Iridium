@@ -268,7 +268,7 @@ std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
     return makeError(errMsg);
   }
 
-  if(m_CurUnit.m_Vars.contains(name.getString())) {
+  if(m_CurUnit.m_Vars[m_CurFunction].contains(name.getString())) {
     return makeError("Redefinition of variable with name " + name.getString());
   }
 
@@ -297,7 +297,9 @@ std::unique_ptr<AST::Stmt> Parser::varDeclaration(ty::Type type) {
 
   std::cout << "Parsed a Variable Declaration of name " << name.getString()
             << std::endl;
-  m_CurUnit.m_Vars[name.getString()] = type;
+  if(!inStructDecl()) {
+    m_CurUnit.m_Vars[m_CurFunction][name.getString()] = type;
+  }
   return std::make_unique<AST::VarDeclStmt>(name.getString(), type,
                                             std::move(initializer));
 }
@@ -308,6 +310,8 @@ std::unique_ptr<AST::Stmt> Parser::fnProto() {
   if (hasError()) {
     return makeError(errMsg);
   }
+
+  m_CurFunction = name;
 
   consume(tok::TokType::OpenParen, "Expected '(' after function identifier");
 
@@ -341,10 +345,9 @@ std::unique_ptr<AST::Stmt> Parser::fnProto() {
           std::move(paramName), ty::from_keyword(paramType.getTokType())));
     } while (match(tok::TokType::Comma));
   }
-  // new set of var names for each function
-  m_CurUnit.m_Vars.clear();
+
   for(auto& pair : params) {
-    m_CurUnit.m_Vars[pair.first.getString()] = pair.second;
+    m_CurUnit.m_Vars[m_CurFunction][pair.first.getString()] = pair.second;
   }
 
   consume(tok::TokType::CloseParen, "Expected ')' after function parameter(s)");
@@ -394,8 +397,10 @@ std::unique_ptr<AST::Stmt> Parser::fnDefinition() {
     return makeError(errMsg);
   }
 
+  //cur func is set in proto parsing so that parameters are accurately registered as variable bindings
   std::cerr << "Parsing body for : " << proto->name << std::endl;
-  m_CurFunction = proto->name;
+  std::cerr << "Cur func is set to: " << m_CurFunction << std::endl;
+  std::cerr << "map size is: " << m_CurUnit.m_Vars[m_CurFunction].size() << "\n";
 
   std::unique_ptr<AST::Stmt> body = blockStmt();
 
@@ -414,9 +419,8 @@ std::unique_ptr<AST::Stmt> Parser::fnDefinition() {
 }
 
 std::unique_ptr<AST::Stmt> Parser::structDefinition() {
-  // clear any local vars from a function
-  m_CurUnit.m_Vars.clear();
   auto nameTok = consume(tok::TokType::Identifier, "Expected Struct name");
+  m_InStruct = true;
 
   consume(tok::TokType::OpenBrace, "Expected '{' after struct name");
   m_ScopeIndex += 1;
@@ -439,6 +443,7 @@ std::unique_ptr<AST::Stmt> Parser::structDefinition() {
     std::cerr << "Struct field type at parse time: " << ty::to_string(static_cast<AST::VarDeclStmt*>(field.get())->type) << std::endl;
   }
 
+  m_InStruct = true;
   return std::make_unique<AST::StructDefStmt>(nameTok.getString(), std::move(fields));
 }
 
@@ -788,8 +793,8 @@ std::unique_ptr<AST::Expr> Parser::identifier() {
   if (peek().getTokType() != tok::TokType::OpenParen) {
 
     
-    auto result = m_CurUnit.m_Vars.find(name);
-    if (result == m_CurUnit.m_Vars.end()) {
+    auto result = m_CurUnit.m_Vars[m_CurFunction].find(name);
+    if (result == m_CurUnit.m_Vars[m_CurFunction].end()) {
       std::cerr << "Use of an undefined variable '" << name << "'" << std::endl;
       return std::make_unique<AST::ErrExpr>("Undefined variable" + name,
                                             currentLine());

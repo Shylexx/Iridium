@@ -65,8 +65,6 @@ namespace ty {
 
   private:
     std::vector<std::string> m_CustomTypes;
-    // The current set of bindings we are type checking with
-    std::unordered_map<std::string, ty::Type> m_CurBindings;
 
     std::vector<std::string> m_TypeErrors{};
     AST::Unit* m_Unit;
